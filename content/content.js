@@ -4,33 +4,73 @@ chrome.runtime.onMessage.addListener((message) => {
 
   if (message.type !== "hideShorts") return;
 
-  const elements = document.querySelectorAll(
-    "ytd-rich-shelf-renderer[is-shorts]"
+  const homePageShortsElements = document.querySelectorAll(
+    'ytd-rich-shelf-renderer[is-shorts]'
   );
 
-  elements.forEach((element) => {
-    const sectionParent = element.closest("ytd-rich-section-renderer");
+  const searchPageShortsElements = document.querySelectorAll(
+    'ytm-shorts-lockup-view-model-v2'
+  );
 
-    if (sectionParent) {
-      sectionParent.style.display = message.enabled ? "none" : "";
-    } else {
-      const gridParent = element.closest("grid-shelf-view-model");
-      const host = gridParent?.querySelector(".ytGridShelfViewModelHost");
+  const homePageLeftSideButtons = document.querySelectorAll(
+    'ytd-mini-guide-entry-renderer'
+  ); 
 
-      if (host) {
-        host.style.display = message.enabled ? "none" : "";
+  const homePageInnerToggleButtons = document.querySelectorAll(
+    'ytd-guide-entry-renderer')
+  ;
+
+  const historyPageVideos = document.querySelectorAll(
+    'ytd-video-renderer'
+  );
+
+  if(homePageShortsElements) {
+    homePageShortsElements.forEach((item) => {
+      const sectionParent = item.closest("ytd-rich-section-renderer");
+
+      if (sectionParent) {
+        sectionParent.style.display = message.enabled ? "none" : "";
       }
-    }
+    });
+  }
 
-    // const parentElm =
-    //   element.closest("ytd-rich-section-renderer") ||
-    //   element.closest("grid-shelf-view-model");
+  if(searchPageShortsElements) {
+    searchPageShortsElements.forEach((item) => {
+      const sectionParent = item.closest("grid-shelf-view-model");
 
-    // if (!parentElm) return;
+      if (sectionParent) {
+        sectionParent.style.display = message.enabled ? "none" : "";
+      }
+    });
+  }
 
-    // parentElm.style.display = message.enabled ? "none" : "";
-  });
-  
+  if(homePageLeftSideButtons) {
+    homePageLeftSideButtons.forEach((item) => {
+      const link = item.querySelector('a');
+
+      if (link?.getAttribute("title") === "Shorts") {
+        item.style.display = message.enabled ? "none" : "";
+      }
+    });
+  }
+
+  if(homePageInnerToggleButtons) {
+    homePageInnerToggleButtons.forEach((item) => {
+      const link = item.querySelector('a');
+
+      if (link?.getAttribute("title") === "Shorts") {
+        item.style.display = message.enabled ? "none" : "";
+      }
+    });
+  }
+
+  if(historyPageVideos) {
+    historyPageVideos.forEach((video) => {
+      if (video.querySelector('a[href^="/shorts/"]')) {
+        video.style.display = message.enabled ? "none" : "";
+      }
+    });
+  }
 });
 
 

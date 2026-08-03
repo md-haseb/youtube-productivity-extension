@@ -1,54 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="popup.css">
-  <title>Document</title>
-</head>
-<body>
-  <div class="popup-container">
-    <header class="popup-header">
-      <h1 class="popup-title">YouTube Productivity</h1>
-    </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="popup-container">
+      <header class="popup-header">
+        <h1 class="popup-title">YouTube Productivity</h1>
+      </header>
 
-    <main class="popup-content">
-      <ul class="feature-list">
-        <li>
-          <label class="feature-item">
-            <span>Hide Shorts</span>
-            <input type="checkbox" class="feature-toggle" data-setting="hideShorts">
-          </label>
-        </li>
+      <main class="popup-content">
+        <ul class="feature-list">
+          <li>
+            <label class="feature-item">
+              <span>Hide Shorts</span>
+              <input
+                type="checkbox"
+                class="feature-toggle"
+                data-setting="hideShorts"
+              />
+            </label>
+          </li>
 
-        <li>
-          <label class="feature-item">
-            <span>Hide Comments</span>
-            <input type="checkbox" class="feature-toggle" data-setting="hideComments">
-          </label>
-        </li>
+          <li>
+            <label class="feature-item">
+              <span>Hide Comments</span>
+              <input
+                type="checkbox"
+                class="feature-toggle"
+                data-setting="hideComments"
+              />
+            </label>
+          </li>
 
-        <li>
-          <label class="feature-item">
-            <span>Hide Recommendations</span>
-            <input type="checkbox" class="feature-toggle" data-setting="hideRecommendations">
-          </label>
-        </li>
+          <li>
+            <label class="feature-item">
+              <span>Hide Recommendations</span>
+              <input
+                type="checkbox"
+                class="feature-toggle"
+                data-setting="hideRecommendations"
+              />
+            </label>
+          </li>
 
-        <li>
-          <label class="feature-item">
-            <span>Hide End-Screen Cards</span>
-            <input type="checkbox" class="feature-toggle" data-setting="hideEndScreenCards">
-          </label>
-        </li>
-      </ul>
+          <li>
+            <label class="feature-item">
+              <span>Hide End-Screen Cards</span>
+              <input
+                type="checkbox"
+                class="feature-toggle"
+                data-setting="hideEndScreenCards"
+              />
+            </label>
+          </li>
+        </ul>
 
-      <button class="reset-button">
-        Reset to Default
-      </button>
-    </main>
-  </div>
+        <button class="reset-button">Reset to Default</button>
+      </main>
+    </div>
 
-  <script src="popup.js"></script>
-</body>
+    <script src="popup.js"></script>
+  </body>
 </html>
+
+
