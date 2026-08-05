@@ -9,6 +9,9 @@ chrome.runtime.onMessage.addListener((message) => {
       toggleShorts(message.enabled);
       break;
 
+    case "hideComments": 
+      toggleComments(message.enabled);
+      break;
     
   }
 });
