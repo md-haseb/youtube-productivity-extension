@@ -17,6 +17,10 @@ chrome.runtime.onMessage.addListener((message) => {
       toggleRecommendations(message.enabled);
       break;
 
+    case "hidePlaylist":
+      togglePlaylist(message.enabled);
+      break;
+
   }
 });
 

@@ -20,6 +20,7 @@
       "content/features/shorts.js",
       "content/features/comments.js",
       "content/features/recommendations.js",
+      "content/features/playlist.js",
       "content/content.js"
       ],
       "css": ["content/content.css"]
