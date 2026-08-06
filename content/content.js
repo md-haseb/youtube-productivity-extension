@@ -12,7 +12,11 @@ chrome.runtime.onMessage.addListener((message) => {
     case "hideComments": 
       toggleComments(message.enabled);
       break;
-    
+
+    case "hideRecommendations": 
+      toggleRecommendations(message.enabled);
+      break;
+
   }
 });
 

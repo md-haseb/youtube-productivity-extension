@@ -9,9 +9,7 @@ function toggleComments(isHidden) {
 function toggleWatchPageComments(isHidden) {
   const comments = document.querySelector("ytd-comments[id='comments']");
 
-  if(comments) {
-    toggleVisibility(comments, isHidden)
-  }
+  toggleVisibility(comments, isHidden);
 }
 
 
@@ -25,7 +23,5 @@ function toggleShortsPageCommentsBtn(isHidden) {
 
   const navButtonParent = btn.closest("label");
 
-  if(navButtonParent) {
-    toggleVisibility(navButtonParent, isHidden);
-  }
+  toggleVisibility(navButtonParent, isHidden);
 }

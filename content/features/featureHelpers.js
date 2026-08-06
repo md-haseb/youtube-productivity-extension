@@ -1,3 +1,5 @@
 function toggleVisibility(element, isHidden) {
- element.style.display = isHidden ? "none" : "";
+  if(element) {
+    element.style.display = isHidden ? "none" : "";
+  }
 }

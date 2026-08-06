@@ -18,9 +18,7 @@ function toggleHomeShortsShelves(isHidden) {
   homeShortsShevles.forEach((shelf) => {
     const sectionParent = shelf.closest("ytd-rich-section-renderer");
 
-    if (sectionParent) {
-      toggleVisibility(sectionParent, isHidden);
-    }
+    toggleVisibility(sectionParent, isHidden);
   });
 }
 
@@ -34,9 +32,7 @@ function toggleSearchShortsShelves(isHidden) {
   searchShortsShevles.forEach((shelf) => {
     const sectionParent = shelf.closest("grid-shelf-view-model");
 
-    if (sectionParent) {
-      toggleVisibility(sectionParent, isHidden);
-    }
+    toggleVisibility(sectionParent, isHidden);
   });
 }
 
