@@ -21,6 +21,8 @@
       "content/features/comments.js",
       "content/features/recommendations.js",
       "content/features/playlist.js",
+      "content/features/endscreen.js",
+      "content/observer.js",
       "content/content.js"
       ],
       "css": ["content/content.css"]

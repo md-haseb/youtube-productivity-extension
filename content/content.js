@@ -1,3 +1,29 @@
+
+const settings = {
+    'hideShorts': false,
+    'hideComments': false,
+    'hideRecommendations': false,
+    'hidePlaylist': false,
+    'hideEndScreenFeed': false,
+    'hideEndScreenCards': false
+  }
+
+chrome.storage.sync.get(settings, (result) => {
+  Object.assign(settings, result);
+
+  toggleShorts(settings.hideShorts);
+  toggleComments(settings.hideComments);
+  toggleRecommendations(settings.hideRecommendations);
+  togglePlaylist(settings.hidePlaylist);
+  toggleEndScreenFeed(settings.hideEndScreenFeed);
+  toggleEndScreenCards(settings.hideEndScreenCards);
+
+  startMutationObserver(settings);
+});
+
+
+
+
 chrome.runtime.onMessage.addListener((message) => {
   console.log(message.type);
   console.log(message.enabled);
@@ -6,19 +32,33 @@ chrome.runtime.onMessage.addListener((message) => {
 
   switch (message.type) {
     case "hideShorts":
-      toggleShorts(message.enabled);
+      settings.hideShorts = message.enabled;
+      toggleShorts(settings.hideShorts);
       break;
 
-    case "hideComments": 
-      toggleComments(message.enabled);
+    case "hideComments":
+      settings.hideComments = message.enabled;
+      toggleComments(settings.hideComments);
       break;
 
-    case "hideRecommendations": 
-      toggleRecommendations(message.enabled);
+    case "hideRecommendations":
+      settings.hideRecommendations = message.enabled;
+      toggleRecommendations(settings.hideRecommendations);
       break;
 
     case "hidePlaylist":
-      togglePlaylist(message.enabled);
+      settings.hidePlaylist = message.enabled;
+      togglePlaylist(settings.hidePlaylist);
+      break;
+    
+    case "hideEndScreenFeed":
+      settings.hideEndScreenFeed = message.enabled;
+      toggleEndScreenFeed(settings.hideEndScreenFeed);
+      break;
+
+    case "hideEndScreenCards":
+      settings.hideEndScreenCards = message.enabled;
+      toggleEndScreenCards(settings.hideEndScreenCards);
       break;
 
   }
