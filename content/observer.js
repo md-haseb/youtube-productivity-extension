@@ -28,6 +28,10 @@ function startMutationObserver(settings) {
     if (settings.hideEndScreenCards) {
       toggleEndScreenCards(settings.hideEndScreenCards);
     }
+
+    if (settings.hideMix) {
+      toggleMixes(settings.hideMix);
+    }
   });
 
   observer.observe(document.body, {

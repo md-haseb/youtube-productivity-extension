@@ -6,7 +6,8 @@ const settings = {
     'hideRecommendations': false,
     'hidePlaylist': false,
     'hideEndScreenFeed': false,
-    'hideEndScreenCards': false
+    'hideEndScreenCards': false,
+    'hideMix': false
   }
 
 chrome.storage.sync.get(settings, (result) => {
@@ -19,6 +20,7 @@ chrome.storage.sync.get(settings, (result) => {
   togglePlaylist(settings.hidePlaylist);
   toggleEndScreenFeed(settings.hideEndScreenFeed);
   toggleEndScreenCards(settings.hideEndScreenCards);
+  toggleMixes(settings.hideMix);
 
   startMutationObserver(settings);
 });
@@ -66,6 +68,11 @@ chrome.runtime.onMessage.addListener((message) => {
     case "hideLiveChat":
       settings.hideLiveChat = message.enabled;
       toggleLiveChat(settings.hideLiveChat);
+      break;
+
+    case "hideMix":
+      settings.hideMix = message.enabled;
+      toggleMixes(settings.hideMix);
       break;
 
   }

@@ -23,6 +23,7 @@
       "content/features/playlist.js",
       "content/features/endscreen.js",
       "content/features/live-chat.js",
+      "content/features/mix.js",
       "content/observer.js",
       "content/content.js"
       ],
