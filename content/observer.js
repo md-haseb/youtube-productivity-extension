@@ -32,6 +32,10 @@ function startMutationObserver(settings) {
     if (settings.hideMix) {
       toggleMixes(settings.hideMix);
     }
+
+    if (settings.hideNotificationsBtn) {
+      toggleNotificationsBtn(settings.hideNotificationsBtn);
+    }
   });
 
   observer.observe(document.body, {

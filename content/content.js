@@ -7,7 +7,8 @@ const settings = {
     'hidePlaylist': false,
     'hideEndScreenFeed': false,
     'hideEndScreenCards': false,
-    'hideMix': false
+    'hideMix': false,
+    'hideNotificationsBtn': false
   }
 
 chrome.storage.sync.get(settings, (result) => {
@@ -21,6 +22,7 @@ chrome.storage.sync.get(settings, (result) => {
   toggleEndScreenFeed(settings.hideEndScreenFeed);
   toggleEndScreenCards(settings.hideEndScreenCards);
   toggleMixes(settings.hideMix);
+  toggleNotificationsBtn(settings.hideNotificationsBtn);
 
   startMutationObserver(settings);
 });
@@ -75,6 +77,11 @@ chrome.runtime.onMessage.addListener((message) => {
       toggleMixes(settings.hideMix);
       break;
 
+    case "hideNotificationsBtn":
+      settings.hideNotificationsBtn = message.enabled;
+      toggleNotificationsBtn(settings.hideNotificationsBtn);
+      break;
+    
   }
 });
 
