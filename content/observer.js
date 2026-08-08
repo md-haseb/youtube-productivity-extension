@@ -9,6 +9,10 @@ function startMutationObserver(settings) {
       toggleComments(settings.hideComments);
     }
 
+    if (settings.hideLiveChat) {
+      toggleLiveChat(settings.hideLiveChat);
+    }
+
     if (settings.hideRecommendations) {
       toggleRecommendations(settings.hideRecommendations);
     }

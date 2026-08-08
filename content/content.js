@@ -2,6 +2,7 @@
 const settings = {
     'hideShorts': false,
     'hideComments': false,
+    'hideLiveChat': false,
     'hideRecommendations': false,
     'hidePlaylist': false,
     'hideEndScreenFeed': false,
@@ -13,6 +14,7 @@ chrome.storage.sync.get(settings, (result) => {
 
   toggleShorts(settings.hideShorts);
   toggleComments(settings.hideComments);
+  toggleLiveChat(settings.hideLiveChat);
   toggleRecommendations(settings.hideRecommendations);
   togglePlaylist(settings.hidePlaylist);
   toggleEndScreenFeed(settings.hideEndScreenFeed);
@@ -59,6 +61,11 @@ chrome.runtime.onMessage.addListener((message) => {
     case "hideEndScreenCards":
       settings.hideEndScreenCards = message.enabled;
       toggleEndScreenCards(settings.hideEndScreenCards);
+      break;
+
+    case "hideLiveChat":
+      settings.hideLiveChat = message.enabled;
+      toggleLiveChat(settings.hideLiveChat);
       break;
 
   }
