@@ -36,6 +36,10 @@ function startMutationObserver(settings) {
     if (settings.hideNotificationsBtn) {
       toggleNotificationsBtn(settings.hideNotificationsBtn);
     }
+
+    if (settings.hidePlayables) {
+      togglePlayables(settings.hidePlayables);
+    }
   });
 
   observer.observe(document.body, {

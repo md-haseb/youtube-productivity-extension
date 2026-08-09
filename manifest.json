@@ -25,6 +25,7 @@
       "content/features/live-chat.js",
       "content/features/mix.js",
       "content/features/notifications.js",
+      "content/features/playables.js",
       "content/observer.js",
       "content/content.js"
       ],
