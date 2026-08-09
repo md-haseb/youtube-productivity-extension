@@ -26,6 +26,7 @@
       "content/features/mix.js",
       "content/features/notifications.js",
       "content/features/playables.js",
+      "content/features/explore.js",
       "content/observer.js",
       "content/content.js"
       ],

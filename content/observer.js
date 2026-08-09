@@ -37,6 +37,10 @@ function startMutationObserver(settings) {
       toggleNotificationsBtn(settings.hideNotificationsBtn);
     }
 
+    if(settings.hideExplore) {
+      toggleExplore(settings.hideExplore);
+    }
+
     if (settings.hidePlayables) {
       togglePlayables(settings.hidePlayables);
     }

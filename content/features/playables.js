@@ -2,8 +2,8 @@
 
 function togglePlayables(isHidden) {
   togglePlayablesShelves(isHidden);
-  toggleExplorePlayablesBtn(isHidden);
-  toggleYouTabPlayablesBtn(isHidden);
+  toggleNavExplorePlayablesBtn(isHidden);
+  toggleNavYouTabPlayablesBtn(isHidden);
 }
 
 
@@ -25,7 +25,7 @@ function togglePlayablesShelves(isHidden) {
 
 
 
-function toggleExplorePlayablesBtn(isHidden) {
+function toggleNavExplorePlayablesBtn(isHidden) {
   const playablesBtn = document.querySelector(
     'ytd-guide-entry-renderer a[href="/playables"]'
   );
@@ -39,7 +39,7 @@ function toggleExplorePlayablesBtn(isHidden) {
 
 
 
-function toggleYouTabPlayablesBtn(isHidden) {
+function toggleNavYouTabPlayablesBtn(isHidden) {
   const playablesBtn = document.querySelector(
     'ytd-guide-entry-renderer a[href="/playables/saved"]'
   );
