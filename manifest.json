@@ -27,6 +27,7 @@
       "content/features/notifications.js",
       "content/features/playables.js",
       "content/features/explore.js",
+      "content/features/more-from-yt.js",
       "content/observer.js",
       "content/content.js"
       ],

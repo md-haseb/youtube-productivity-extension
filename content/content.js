@@ -10,7 +10,8 @@ const settings = {
     'hideMix': false,
     'hideNotificationsBtn': false,
     'hideExplore': false,
-    'hidePlayables': false
+    'hidePlayables': false,
+    'hideMoreFromYouTube': false
   }
 
 chrome.storage.sync.get(settings, (result) => {
@@ -27,6 +28,7 @@ chrome.storage.sync.get(settings, (result) => {
   toggleNotificationsBtn(settings.hideNotificationsBtn);
   toggleExplore(settings.hideExplore);
   togglePlayables(settings.hidePlayables);
+  toggleMoreFromYouTube(settings.hideMoreFromYouTube);
 
   startMutationObserver(settings);
 });
@@ -94,6 +96,11 @@ chrome.runtime.onMessage.addListener((message) => {
     case "hidePlayables":
       settings.hidePlayables = message.enabled;
       togglePlayables(settings.hidePlayables);
+      break;
+
+    case "hideMoreFromYouTube":
+      settings.hideMoreFromYouTube = message.enabled;
+      toggleMoreFromYouTube(settings.hideMoreFromYouTube);
       break;
     
   }

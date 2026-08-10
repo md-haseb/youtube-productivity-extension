@@ -44,6 +44,10 @@ function startMutationObserver(settings) {
     if (settings.hidePlayables) {
       togglePlayables(settings.hidePlayables);
     }
+
+    if (settings.hideMoreFromYouTube) {
+      toggleMoreFromYouTube(settings.hideMoreFromYouTube);
+    }
   });
 
   observer.observe(document.body, {
