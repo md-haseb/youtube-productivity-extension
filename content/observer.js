@@ -52,7 +52,11 @@ function startMutationObserver(settings) {
     if (settings.hideSubscriptions) {
       toggleSidebarSubscriptionsButtons(settings.hideSubscriptions);
     }
-    
+
+    if (settings.hideSearchSuggestions) {
+      toggleSearchSuggestions(settings.hideSearchSuggestions);
+    }
+
   });
 
   observer.observe(document.body, {
