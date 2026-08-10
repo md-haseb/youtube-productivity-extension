@@ -11,7 +11,8 @@ const settings = {
     'hideNotificationsBtn': false,
     'hideExplore': false,
     'hidePlayables': false,
-    'hideMoreFromYouTube': false
+    'hideMoreFromYouTube': false,
+    'hideSubscriptions': false
   }
 
 chrome.storage.sync.get(settings, (result) => {
@@ -29,6 +30,7 @@ chrome.storage.sync.get(settings, (result) => {
   toggleExplore(settings.hideExplore);
   togglePlayables(settings.hidePlayables);
   toggleMoreFromYouTube(settings.hideMoreFromYouTube);
+  toggleSidebarSubscriptionsButtons(settings.hideSubscriptions);
 
   startMutationObserver(settings);
 });
@@ -101,6 +103,11 @@ chrome.runtime.onMessage.addListener((message) => {
     case "hideMoreFromYouTube":
       settings.hideMoreFromYouTube = message.enabled;
       toggleMoreFromYouTube(settings.hideMoreFromYouTube);
+      break;
+
+    case "hideSubscriptions":
+      settings.hideSubscriptions = message.enabled;
+      toggleSidebarSubscriptionsButtons(settings.hideSubscriptions);
       break;
     
   }

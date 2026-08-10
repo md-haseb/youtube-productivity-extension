@@ -48,6 +48,11 @@ function startMutationObserver(settings) {
     if (settings.hideMoreFromYouTube) {
       toggleMoreFromYouTube(settings.hideMoreFromYouTube);
     }
+
+    if (settings.hideSubscriptions) {
+      toggleSidebarSubscriptionsButtons(settings.hideSubscriptions);
+    }
+    
   });
 
   observer.observe(document.body, {

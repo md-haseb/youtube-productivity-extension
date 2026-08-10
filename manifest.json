@@ -28,6 +28,7 @@
       "content/features/playables.js",
       "content/features/explore.js",
       "content/features/more-from-yt.js",
+      "content/features/subscriptions.js",
       "content/observer.js",
       "content/content.js"
       ],
