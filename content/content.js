@@ -13,7 +13,8 @@ const settings = {
     'hidePlayables': false,
     'hideMoreFromYouTube': false,
     'hideSubscriptions': false,
-    'hideSearchSuggestions': false
+    'hideSearchSuggestions': false,
+    'disableInfiniteScrolling': false
   }
 
 chrome.storage.sync.get(settings, (result) => {
@@ -33,6 +34,7 @@ chrome.storage.sync.get(settings, (result) => {
   toggleMoreFromYouTube(settings.hideMoreFromYouTube);
   toggleSidebarSubscriptionsButtons(settings.hideSubscriptions);
   toggleSearchSuggestions(settings.hideSearchSuggestions);
+  startInfiniteScrollingObserver(settings.disableInfiniteScrolling);
 
   startMutationObserver(settings);
 });
@@ -116,6 +118,11 @@ chrome.runtime.onMessage.addListener((message) => {
       settings.hideSearchSuggestions = message.enabled;
       toggleSearchSuggestions(settings.hideSearchSuggestions);
       break;
+
+    case "disableInfiniteScrolling": 
+    settings.disableInfiniteScrolling = message.enabled;
+    startInfiniteScrollingObserver(settings.disableInfiniteScrolling);
+    break;
     
   }
 });

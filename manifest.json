@@ -30,6 +30,7 @@
       "content/features/more-from-yt.js",
       "content/features/subscriptions.js",
       "content/features/search.js",
+      "content/infiniteScrollingObserver.js",
       "content/observer.js",
       "content/content.js"
       ],
