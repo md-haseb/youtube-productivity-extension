@@ -1,4 +1,11 @@
 
+/**
+ * Observes YouTube's DOM for dynamic content and reapplies enabled settings
+ * when the DOM changes.
+ *
+ * @param {Object} settings - Current extension settings.
+ */
+
 function startMutationObserver(settings) {
   const observer = new MutationObserver(() => {
     if (settings.hideHomeFeed) {

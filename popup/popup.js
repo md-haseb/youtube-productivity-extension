@@ -6,6 +6,8 @@ toggles.forEach(toggle => {
 });
 
 
+
+
 function handleToggleChange(event) {
  const setting = event.target.dataset.setting;
  const enabled = event.target.checked;
@@ -13,28 +15,28 @@ function handleToggleChange(event) {
  setChromeStorage(setting, enabled);
  sendMessage(setting, enabled);
 
-
-//  chrome.storage.sync.get(null, (result) => {
-//     console.log(result);
-//   });
-
- // return { 'setting': setting, 'enabled': enabled};
- // console.log(setting, enabled);
 }
+
+
 
 
 function setChromeStorage(setting, enabled) {
   chrome.storage.sync.set({
     [setting]: enabled
   }
-  // () => {
-  //   chrome.storage.sync.get(null, (result) => {
-  //     console.log(result);
-  //   });
-  // }
 );
 }
 
+
+
+
+/**
+ * Sends the updated setting to all open YouTube tabs so their content
+ * scripts can apply the change.
+ *
+ * @param {string} type - The setting/message type.
+ * @param {boolean} enabled - Whether the setting is enabled.
+ */
 
 function sendMessage(type, enabled) {
   chrome.tabs.query(

@@ -18,6 +18,10 @@ const settings = {
     'disableInfiniteScrolling': false
   }
 
+
+
+
+// Load saved settings and apply them when the content script initializes.
 chrome.storage.sync.get(settings, (result) => {
   Object.assign(settings, result);
 
@@ -44,11 +48,8 @@ chrome.storage.sync.get(settings, (result) => {
 
 
 
+// Apply setting changes received from the extension popup.
 chrome.runtime.onMessage.addListener((message) => {
-  console.log(message.type);
-  console.log(message.enabled);
-
-  // if (message.type !== "hideShorts") return;
 
   switch (message.type) {
     case "hideHomeFeed":
