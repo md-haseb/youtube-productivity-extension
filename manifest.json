@@ -3,6 +3,14 @@
   "name": "YouTube Productivity",
   "version": "1.0.0",
   "description": "A Chrome extension to reduce distractions on YouTube.",
+
+  "icons": {
+    "16": "assets/icons/brand/logo-16.png",
+    "32": "assets/icons/brand/logo-32.png",
+    "48": "assets/icons/brand/logo-48.png",
+    "128": "assets/icons/brand/logo-128.png"
+  },
+
   "action": {
     "default_popup": "popup/popup.html"
   },
