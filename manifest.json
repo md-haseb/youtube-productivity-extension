@@ -17,6 +17,7 @@
     {
       "matches": ["https://www.youtube.com/*"],
       "js": ["content/features/featureHelpers.js",
+      "content/features/home-feed.js",
       "content/features/shorts.js",
       "content/features/comments.js",
       "content/features/recommendations.js",

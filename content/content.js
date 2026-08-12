@@ -1,5 +1,6 @@
 
 const settings = {
+    'hideHomeFeed': false,
     'hideShorts': false,
     'hideComments': false,
     'hideLiveChat': false,
@@ -20,6 +21,7 @@ const settings = {
 chrome.storage.sync.get(settings, (result) => {
   Object.assign(settings, result);
 
+  toggleHomeFeed(settings.hideHomeFeed);
   toggleShorts(settings.hideShorts);
   toggleComments(settings.hideComments);
   toggleLiveChat(settings.hideLiveChat);
@@ -49,6 +51,11 @@ chrome.runtime.onMessage.addListener((message) => {
   // if (message.type !== "hideShorts") return;
 
   switch (message.type) {
+    case "hideHomeFeed":
+      settings.hideHomeFeed = message.enabled;
+      toggleHomeFeed(settings.hideHomeFeed);
+      break;
+
     case "hideShorts":
       settings.hideShorts = message.enabled;
       toggleShorts(settings.hideShorts);

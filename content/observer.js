@@ -1,6 +1,10 @@
 
 function startMutationObserver(settings) {
   const observer = new MutationObserver(() => {
+    if (settings.hideHomeFeed) {
+      toggleHomeFeed(settings.hideHomeFeed);
+    }
+
     if (settings.hideShorts) {
       toggleShorts(settings.hideShorts);
     }
