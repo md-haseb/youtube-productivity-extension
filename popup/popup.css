@@ -24,7 +24,7 @@ body {
   flex-direction: column;
   border: 1px solid grey;
   border-radius: 12px;
-  padding: 15px;
+  padding: 7px;
 }
 
 .popup-header {
@@ -35,6 +35,7 @@ body {
 
 .popup-header-top {
   display: flex;
+  padding: 12px 10px;
 }
 
 .extension-brand {
@@ -65,11 +66,12 @@ body {
   width: 20%;
   display: flex;
   justify-content: end;
+  align-items: center;
 }
 
 .extension-toggle-btn {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border: 1px solid #242590;
   border-radius: 50%;
   background: #FFFFFF;
@@ -78,6 +80,67 @@ body {
   justify-content: center;
   cursor: pointer;
   padding: 5px;
+}
+
+.popup-nav {
+  display: flex;
+  width: 100%;
+  height: 52px;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.nav-item {
+  position: relative;
+
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  border: none;
+  background: transparent;
+
+  color: #374151;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Vertical separators */
+.nav-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  height: 32px;
+  width: 1px;
+  background: #e5e7eb;
+}
+
+/* Icons */
+.nav-item svg {
+  width: 28px;
+  height: 28px;
+  stroke: currentColor;
+}
+
+/* Active tab */
+.nav-item.active {
+  color: #5b5ce2;
+}
+
+/* Active underline */
+.nav-item.active::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 16px;
+  right: 16px;
+
+  height: 4px;
+  border-radius: 4px 4px 0 0;
+  background: #5b5ce2;
 }
 
 .popup-main {

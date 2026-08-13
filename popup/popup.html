@@ -19,12 +19,27 @@
               </div>
             </div>
             <div class="extension-toggle">
-              <button class="extension-toggle-btn">
-                <img src="/assets/icons/controls/power.svg" alt="power icon">
+              <button type="button" class="extension-toggle-btn" aria-label="Toggle focus mode">
+                <img src="/assets/icons/controls/power.svg" alt="">
               </button>
             </div>
           </div>
-          <div class="popup-navigation"></div>
+          <nav class="popup-nav">
+            <button class="nav-item active">
+              <!-- home icon -->
+              <span>Home</span>
+            </button>
+
+            <button class="nav-item">
+              <!-- allowlist icon -->
+              <span>Allowlist</span>
+            </button>
+
+            <button class="nav-item">
+              <!-- clock icon -->
+              <span>Schedule</span>
+            </button>
+          </nav>
         </header>
 
         <main class="popup-main">
