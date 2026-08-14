@@ -6,43 +6,56 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
-  background-color: #f8fafc;
+  background-color: #F7F9FB;
 }
 
 .popup-container {
-  width: 360px;
+  width: 400px;
   height: 600px;
+  background-color: #F7F9FB;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .popup-card {
-  width: 348px;
-  height: 586px;
+  width: 390px;
+  height: 590px;
+  background-color: #FDFDFE;
   display: flex;
   flex-direction: column;
-  border: 1px solid grey;
-  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.08),
+    0 4px 6px -4px rgba(0, 0, 0, 0.08);
   padding: 7px;
+  gap: 10px;
 }
+
+
+
+
+
 
 .popup-header {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  /* border-bottom: 1px solid #e5e7eb; 
+  padding-bottom: 4px; */
 }
 
 .popup-header-top {
   display: flex;
-  padding: 12px 10px;
+  padding: 10px 18px;
 }
 
 .extension-brand {
   width: 80%;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
 }
 
 .extension-logo {
@@ -53,7 +66,7 @@ body {
 .extension-name {
   font-size: 19px;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.3;
 }
 
 .extension-description {
@@ -82,6 +95,12 @@ body {
   padding: 5px;
 }
 
+
+
+
+
+
+
 .popup-nav {
   display: flex;
   width: 100%;
@@ -98,13 +117,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 5px;
 
   border: none;
   background: transparent;
 
   color: #374151;
-  font-size: 16px;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -143,83 +162,308 @@ body {
   background: #5b5ce2;
 }
 
+
+
+
+/* ================================
+   Main
+   ================================ */
+
 .popup-main {
-  flex: 1;
-  overflow-y: auto;
-}
-
-
-
-/* .popup-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.popup-content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.feature-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.feature-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: 12px 14px;
-
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-
-  cursor: pointer;
-
-  transition: background-color 0.2s ease;
-}
-
-.feature-item:hover {
-  background-color: #f3f4f6;
-}
-
-.feature-item span {
-  font-size: 15px;
-  font-weight: 500;
-  color: #374151;
-}
-
-.feature-item input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.reset-button {
   width: 100%;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* box-sizing: border-box; */
+}
 
-  padding: 12px;
 
-  border: none;
-  border-radius: 10px;
+/* ================================
+   Settings Section
+   ================================ */
 
-  background-color: #2563eb;
-  color: white;
+.settings-section {
+  width: 100%;
+  /* box-sizing: border-box; */
+
+  padding: 10px 14px;
+
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+
+/* ================================
+   Section Header
+   ================================ */
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 7px;
+}
+
+.section-icon {
+  width: 40px;
+  height: 40px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+
+  background: #eeeeff;
+}
+
+.section-icon img {
+  width: 25px;
+  height: 25px;
+
+  display: block;
+}
+
+
+.section-heading h2 {
+  margin: 0 0 5px;
+
+  color: #111827;
 
   font-size: 15px;
   font-weight: 600;
+  line-height: 1.2;
+}
+
+.section-heading p {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+
+/* ================================
+   Feature List
+   ================================ */
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  margin: 0;
+  padding-left: 47px;
+
+  list-style: none;
+}
+
+
+/* ================================
+   Feature Item
+   ================================ */
+
+.feature-item {
+  min-height: 35px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 4px;
+
+  box-sizing: border-box;
+
+  color: #111827;
+
+  font-size: 14px;
+  font-weight: 500;
 
   cursor: pointer;
+}
+
+
+/* Icon + text */
+
+.feature-info {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  min-width: 0;
+}
+
+.feature-info img {
+  width: 19px;
+  height: 19px;
+
+  flex-shrink: 0;
+
+  display: block;
+}
+
+.feature-info > span {
+  white-space: nowrap;
+}
+
+
+/* ================================
+   Toggle
+   ================================ */
+
+.toggle {
+  position: relative;
+
+  width: 42px;
+  height: 20px;
+
+  flex-shrink: 0;
+
+  display: block;
+
+  cursor: pointer;
+}
+
+
+/* Hide native checkbox */
+
+.feature-toggle {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  margin: -1px;
+  padding: 0;
+
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+
+  white-space: nowrap;
+
+  border: 0;
+}
+
+
+/* Toggle background */
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+
+  border-radius: 999px;
+
+  background: #e5e7eb;
 
   transition: background-color 0.2s ease;
 }
 
-.reset-button:hover {
-  background-color: #1d4ed8;
-} */
+
+/* Toggle knob */
+
+.toggle-slider::before {
+  content: "";
+
+  position: absolute;
+
+  width: 14px;
+  height: 14px;
+
+  top: 3px;
+  left: 3px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+
+  transition: transform 0.2s ease;
+}
+
+
+/* ================================
+   Toggle ON
+   ================================ */
+
+.feature-toggle:checked + .toggle-slider {
+  background: #242590;
+}
+
+.feature-toggle:checked + .toggle-slider::before {
+  transform: translateX(22px);
+}
+
+
+/* ================================
+   Keyboard Focus
+   ================================ */
+
+.feature-toggle:focus-visible + .toggle-slider {
+  box-shadow:
+    0 0 0 3px rgba(36, 37, 144, 0.15);
+}
+
+
+
+
+
+
+.popup-footer {
+  width: 100%;
+  height: 45px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  margin: 0;
+  padding-right: 15px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.popup-footer span {
+  font-size: 13px;
+}
+
+.version {
+  /* color: #111827; */
+  color: #808080;
+  text-align: center;
+}
+
+.support-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 7px;
+}
+
+.support-container::before {
+  content: "|";
+  color: #d1d5db;
+  margin-right: 7px;
+}
+
+.support-icon {
+  width: 15px;
+  height: 15px;
+  padding-left: 3px;
+}
+
+.support-text {
+  color: #212C8D;
+}
+
+
+

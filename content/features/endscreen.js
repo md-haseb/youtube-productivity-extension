@@ -1,8 +1,8 @@
 
-// function toggleEndScreen(isHidden) {
-//   toggleEndScreenFeed(isHidden);
-//   toggleEndScreenCards(isHidden);
-// }
+function toggleEndScreens(isHidden) {
+  toggleEndScreenFeed(isHidden);
+  toggleEndScreenCards(isHidden);
+}
 
 
 

@@ -32,12 +32,8 @@ function startMutationObserver(settings) {
       togglePlaylist(settings.hidePlaylist);
     }
 
-    if (settings.hideEndScreenFeed) {
-      toggleEndScreenFeed(settings.hideEndScreenFeed);
-    }
-
-    if (settings.hideEndScreenCards) {
-      toggleEndScreenCards(settings.hideEndScreenCards);
+    if (settings.hideEndScreens) {
+      toggleEndScreens(settings.hideEndScreens);
     }
 
     if (settings.hideMix) {

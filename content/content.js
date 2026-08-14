@@ -6,8 +6,7 @@ const settings = {
     'hideLiveChat': false,
     'hideRecommendations': false,
     'hidePlaylist': false,
-    'hideEndScreenFeed': false,
-    'hideEndScreenCards': false,
+    'hideEndScreens': false,
     'hideMix': false,
     'hideNotificationsBtn': false,
     'hideExplore': false,
@@ -31,8 +30,7 @@ chrome.storage.sync.get(settings, (result) => {
   toggleLiveChat(settings.hideLiveChat);
   toggleRecommendations(settings.hideRecommendations);
   togglePlaylist(settings.hidePlaylist);
-  toggleEndScreenFeed(settings.hideEndScreenFeed);
-  toggleEndScreenCards(settings.hideEndScreenCards);
+  toggleEndScreens(settings.hideEndScreens);
   toggleMixes(settings.hideMix);
   toggleNotificationsBtn(settings.hideNotificationsBtn);
   toggleExplore(settings.hideExplore);
@@ -77,14 +75,9 @@ chrome.runtime.onMessage.addListener((message) => {
       togglePlaylist(settings.hidePlaylist);
       break;
     
-    case "hideEndScreenFeed":
-      settings.hideEndScreenFeed = message.enabled;
-      toggleEndScreenFeed(settings.hideEndScreenFeed);
-      break;
-
-    case "hideEndScreenCards":
-      settings.hideEndScreenCards = message.enabled;
-      toggleEndScreenCards(settings.hideEndScreenCards);
+    case "hideEndScreens":
+      settings.hideEndScreens = message.enabled;
+      toggleEndScreens(settings.hideEndScreens);
       break;
 
     case "hideLiveChat":
@@ -128,9 +121,9 @@ chrome.runtime.onMessage.addListener((message) => {
       break;
 
     case "disableInfiniteScrolling": 
-    settings.disableInfiniteScrolling = message.enabled;
-    startInfiniteScrollingObserver(settings.disableInfiniteScrolling);
-    break;
+      settings.disableInfiniteScrolling = message.enabled;
+      startInfiniteScrollingObserver(settings.disableInfiniteScrolling);
+      break;
     
   }
 });
