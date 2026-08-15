@@ -142,3 +142,24 @@ function sendMessage(type, enabled) {
   );
 }
 
+
+
+
+
+// Support view navigation
+
+const mainView = document.querySelector(".popup-main-view");
+const supportView = document.querySelector(".support-view");
+
+const supportBtn = document.querySelector(".support-button-container");
+const supportBackBtn = document.querySelector(".support-back-btn");
+
+supportBtn.addEventListener("click", () => {
+  mainView.hidden = true;
+  supportView.hidden = false;
+});
+
+supportBackBtn.addEventListener("click", () => {
+  supportView.hidden = true;
+  mainView.hidden = false;
+});

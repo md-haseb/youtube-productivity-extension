@@ -36,7 +36,7 @@
 
         </header>
 
-        <main class="popup-main">
+        <main class="popup-main popup-main-view">
 
           <section class="settings-section">
 
@@ -449,186 +449,62 @@
           </section>
 
           <div class="disabled-overlay"></div>
+
         </main>
+
+        <!-- Support UI -->
+        <section class="support-view" hidden>
+          <button type="button" class="support-back-btn">
+            <img src="/assets/icons/support/support-left-arrow.svg" alt="">
+            <span>Back</span>
+          </button>
+
+          <div class="support-content">
+
+            <div class="support-section">
+              <p>Having trouble with FocusTube? Try these quick steps first:</p>
+
+              <ul>
+                <li>Refresh the YouTube page.</li>
+                <li>Restart your browser and try again.</li>
+                <li>Make sure FocusTube is enabled.</li>
+                <li>Temporarily disable other YouTube-related extensions to check for conflicts.</li>
+                <li>If the issue continues, reinstall FocusTube and try again.</li>
+              </ul>
+            </div>
+
+            <div class="support-section">
+              <p>Still need help? Get in touch and we'll be happy to help.</p>
+
+              <p>Contact us at <a href="mailto:support@example.com">support@example.com</a></p>
+            </div>
+
+            <div class="support-section">
+              <p>When reporting an issue, please include:</p>
+
+              <ul>
+                <li>A brief description of the problem.</li>
+                <li>A screenshot or screen recording, if possible.</li>
+                <li>Your browser and version (e.g., Chrome 88.0).</li>
+                <li>Your FocusTube version (e.g., v1.0.0).</li>
+              </ul>
+            </div>
+
+            <p class="support-note">
+              The more details you provide, the easier it is to identify and resolve the issue.
+            </p>
+
+          </div>
+        </section>
 
         <footer class="popup-footer">
           <span class="version">v1.0.0</span>
-          <div class="support-container">
-            <span class="support-text">Support</span>
-            <img class="support-icon" src="/assets/icons/footer/support-arrow.svg" alt="">
-          </div>
+            <button type="button" class="support-button-container">
+              <span>Support</span>
+              <img class="support-icon" src="/assets/icons/support/support-right-arrow.svg" alt="">
+            </button>
         </footer>
 
-        <!-- <main class="popup-main">
-          <ul class="feature-list">
-            <li>
-              <label class="feature-item">
-                <span>Hide Home Feed</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hideHomeFeed"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Hide Shorts</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hideShorts"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Hide Comments</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hideComments"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Hide Recommendations</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hideRecommendations"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Hide Live Chat</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hideLiveChat"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Hide Playlist</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hidePlaylist"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Hide End-Screens</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hideEndScreens"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Hide Mix</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hideMix"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Hide Notifications</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hideNotificationsBtn"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Hide Explore</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hideExplore"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Hide More From YouTube</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hideMoreFromYouTube"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Hide Subscriptions</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hideSubscriptions"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Hide Playables</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hidePlayables"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Hide Search Suggestions</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="hideSearchSuggestions"
-                />
-              </label>
-            </li>
-
-            <li>
-              <label class="feature-item">
-                <span>Disable Infinite Scrolling</span>
-                <input
-                  type="checkbox"
-                  class="feature-toggle"
-                  data-setting="disableInfiniteScrolling"
-                />
-              </label>
-            </li>
-
-          </ul>
-
-        </main> -->
       </div>
     </div>
 

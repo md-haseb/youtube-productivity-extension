@@ -442,14 +442,18 @@ body {
   text-align: center;
 }
 
-.support-container {
+.support-button-container {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-left: 7px;
+  color: #212C8D;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
 }
 
-.support-container::before {
+.support-button-container::before {
   content: "|";
   color: #d1d5db;
   margin-right: 7px;
@@ -461,9 +465,109 @@ body {
   padding-left: 3px;
 }
 
-.support-text {
+/* .support-button {
   color: #212C8D;
+  border: none;
+} */
+
+
+
+
+
+.support-view {
+  height: 100%;
 }
 
+/* .support-view[hidden] {
+  display: none;
+} */
 
+.support-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 
+  padding: 0;
+  border: 0;
+  background: none;
+
+  color: #212C8D;
+  font-size: 17px;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.support-back-btn img {
+  width: 16px;
+  height: 16px;
+}
+
+.support-back-btn:hover {
+  color: #242590;
+}
+
+.support-content {
+  margin-top: 16px;
+}
+
+.support-section {
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+.support-section p {
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.support-content ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+.support-content li {
+  margin-bottom: 8px;
+}
+
+.support-note {
+  margin: 0;
+}
+
+/* .support-content {
+  margin-top: 24px;
+  font-size: 13px;
+}
+
+.support-content div ul {
+  list-style-type: circle;
+} */
+
+/* .support-content h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+} */
+
+/* .support-content p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 15px;
+  line-height: 1.5;
+} */
+
+.support-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+
+  color: #242590;
+  font-size: 13px;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.support-btn:hover {
+  text-decoration: underline;
+}
