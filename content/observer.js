@@ -1,4 +1,9 @@
 
+
+let observer = null;
+
+
+
 /**
  * Observes YouTube's DOM for dynamic content and reapplies enabled settings
  * when the DOM changes.
@@ -7,7 +12,13 @@
  */
 
 function startMutationObserver(settings) {
-  const observer = new MutationObserver(() => {
+
+  if (!settings.extensionEnabled) return;
+
+  // Prevent multiple observers
+  stopMutationObserver();
+
+  observer = new MutationObserver(() => {
     if (settings.hideHomeFeed) {
       toggleHomeFeed(settings.hideHomeFeed);
     }
@@ -44,7 +55,7 @@ function startMutationObserver(settings) {
       toggleNotificationsBtn(settings.hideNotificationsBtn);
     }
 
-    if(settings.hideExplore) {
+    if (settings.hideExplore) {
       toggleExplore(settings.hideExplore);
     }
 
@@ -70,4 +81,15 @@ function startMutationObserver(settings) {
     childList: true,
     subtree: true,
   });
+}
+
+
+
+
+
+function stopMutationObserver() {
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
 }

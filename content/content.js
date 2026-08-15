@@ -1,5 +1,6 @@
 
 const settings = {
+    'extensionEnabled': true,
     'hideHomeFeed': false,
     'hideShorts': false,
     'hideComments': false,
@@ -24,21 +25,9 @@ const settings = {
 chrome.storage.sync.get(settings, (result) => {
   Object.assign(settings, result);
 
-  toggleHomeFeed(settings.hideHomeFeed);
-  toggleShorts(settings.hideShorts);
-  toggleComments(settings.hideComments);
-  toggleLiveChat(settings.hideLiveChat);
-  toggleRecommendations(settings.hideRecommendations);
-  togglePlaylist(settings.hidePlaylist);
-  toggleEndScreens(settings.hideEndScreens);
-  toggleMixes(settings.hideMix);
-  toggleNotificationsBtn(settings.hideNotificationsBtn);
-  toggleExplore(settings.hideExplore);
-  togglePlayables(settings.hidePlayables);
-  toggleMoreFromYouTube(settings.hideMoreFromYouTube);
-  toggleSidebarSubscriptionsButtons(settings.hideSubscriptions);
-  toggleSearchSuggestions(settings.hideSearchSuggestions);
-  startInfiniteScrollingObserver(settings.disableInfiniteScrolling);
+  if (!settings.extensionEnabled) return; 
+
+  applyAllFeatures();
 
   startMutationObserver(settings);
 });
@@ -50,6 +39,18 @@ chrome.storage.sync.get(settings, (result) => {
 chrome.runtime.onMessage.addListener((message) => {
 
   switch (message.type) {
+    case "RESTORE_ALL_FEATURES":
+      settings.extensionEnabled = message.enabled;
+      stopMutationObserver();
+      restoreAllFeatures();
+      break;
+
+    case "APPLY_ALL_FEATURES":
+      settings.extensionEnabled = message.enabled;
+      applyAllFeatures();
+      startMutationObserver(settings);
+      break;
+
     case "hideHomeFeed":
       settings.hideHomeFeed = message.enabled;
       toggleHomeFeed(settings.hideHomeFeed);
@@ -131,3 +132,42 @@ chrome.runtime.onMessage.addListener((message) => {
 
 
 
+
+function restoreAllFeatures() {
+  toggleHomeFeed(false);
+  toggleShorts(false);
+  toggleComments(false);
+  toggleLiveChat(false);
+  toggleRecommendations(false);
+  togglePlaylist(false);
+  toggleEndScreens(false);
+  toggleMixes(false);
+  toggleNotificationsBtn(false);
+  toggleExplore(false);
+  togglePlayables(false);
+  toggleMoreFromYouTube(false);
+  toggleSidebarSubscriptionsButtons(false);
+  toggleSearchSuggestions(false);
+  startInfiniteScrollingObserver(false);
+}
+
+
+
+
+function applyAllFeatures() {
+  toggleHomeFeed(settings.hideHomeFeed);
+  toggleShorts(settings.hideShorts);
+  toggleComments(settings.hideComments);
+  toggleLiveChat(settings.hideLiveChat);
+  toggleRecommendations(settings.hideRecommendations);
+  togglePlaylist(settings.hidePlaylist);
+  toggleEndScreens(settings.hideEndScreens);
+  toggleMixes(settings.hideMix);
+  toggleNotificationsBtn(settings.hideNotificationsBtn);
+  toggleExplore(settings.hideExplore);
+  togglePlayables(settings.hidePlayables);
+  toggleMoreFromYouTube(settings.hideMoreFromYouTube);
+  toggleSidebarSubscriptionsButtons(settings.hideSubscriptions);
+  toggleSearchSuggestions(settings.hideSearchSuggestions);
+  startInfiniteScrollingObserver(settings.disableInfiniteScrolling);
+}
