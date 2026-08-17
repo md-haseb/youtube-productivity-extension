@@ -35,12 +35,12 @@
           </div>
 
           <nav class="popup-nav">
-            <button class="nav-item active">
+            <button class="nav-item active" data-page="home">
               <img src="/assets/icons/navigation/home.svg" alt="">
               <span>Home</span>
             </button>
 
-            <button class="nav-item">
+            <button class="nav-item" data-page="allowlist">
               <img src="/assets/icons/navigation/allowlist.svg" alt="">
               <span>Allowlist</span>
             </button>
@@ -49,419 +49,622 @@
         </header>
 
         <main class="popup-main popup-main-view">
+          <div class="page-slider">
 
-          <section class="settings-section">
+            <section class="page home-page">
+              <section class="settings-section">
 
-            <div class="section-header">
+                <div class="section-header">
 
-              <div class="section-icon">
-                <img src="/assets/icons/sections/general.svg" alt="">
-              </div>
+                  <div class="section-icon">
+                    <img src="/assets/icons/sections/general.svg" alt="">
+                  </div>
 
-              <div class="section-heading">
-                <h2>General</h2>
-                <p>Manage general content on YouTube.</p>
-              </div>
+                  <div class="section-heading">
+                    <h2>General</h2>
+                    <p>Manage general content on YouTube.</p>
+                  </div>
 
-            </div>
+                </div>
 
 
-            <ul class="feature-list">
+                <ul class="feature-list">
 
-              <li>
-                <label class="feature-item">
+                  <li>
+                    <label class="feature-item">
 
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/home-feed.svg" alt="">
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/home-feed.svg" alt="">
 
-                    <span>Hide Home Feed</span>
-                  </span>
+                        <span>Hide Home Feed</span>
+                      </span>
 
-                  <span class="toggle">
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hideHomeFeed"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/shorts.svg" alt="">
+
+                        <span>Hide Shorts</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hideShorts"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/mixes.svg" alt="">
+
+                        <span>Hide Mixes</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hideMix"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/search.svg" alt="">
+
+                        <span>Hide Search Suggestions</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hideSearchSuggestions"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/scroll.svg" alt="">
+
+                        <span>Disable Infinite Scrolling</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="disableInfiniteScrolling"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+                </ul>
+
+              </section>
+
+              <section class="settings-section">
+
+                <div class="section-header">
+
+                  <div class="section-icon">
+                    <img src="/assets/icons/sections/watch-page.svg" alt="">
+                  </div>
+
+                  <div class="section-heading">
+                    <h2>Watch Page</h2>
+                    <p>Customize the watch page experience.</p>
+                  </div>
+
+                </div>
+
+
+                <ul class="feature-list">
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/sidebar.svg" alt="">
+
+                        <span>Hide Video Sidebar</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hideRecommendations"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/comments.svg" alt="">
+
+                        <span>Hide Comments</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hideComments"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/end-screens.svg" alt="">
+
+                        <span>Hide End Screens</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hideEndScreens"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/playlist.svg" alt="">
+
+                        <span>Hide Playlist Panel</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hidePlaylist"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/live-chat.svg" alt="">
+
+                        <span>Hide Live Chat</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hideLiveChat"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+                </ul>
+
+              </section>
+
+              <section class="settings-section">
+
+                <div class="section-header">
+
+                  <div class="section-icon">
+                    <img src="/assets/icons/sections/navigation.svg" alt="">
+                  </div>
+
+                  <div class="section-heading">
+                    <h2>Navigation</h2>
+                    <p>Configure YouTube Navigation Elements.</p>
+                  </div>
+
+                </div>
+
+
+                <ul class="feature-list">
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/notifications.svg" alt="">
+
+                        <span>Hide Notifications</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hideNotificationsBtn"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/explore.svg" alt="">
+
+                        <span>Hide Explore</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hideExplore"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/subscriptions.svg" alt="">
+
+                        <span>Hide Subscriptions</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hideSubscriptions"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+                </ul>
+
+              </section>
+
+              <section class="settings-section">
+
+                <div class="section-header">
+
+                  <div class="section-icon">
+                    <img src="/assets/icons/sections/sections.svg" alt="">
+                  </div>
+
+                  <div class="section-heading">
+                    <h2>Sections</h2>
+                    <p>Adjust visibility of YouTube sections.</p>
+                  </div>
+
+                </div>
+
+
+                <ul class="feature-list">
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/playables.svg" alt="">
+
+                        <span>Hide YouTube Playables</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hidePlayables"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+
+                  <li>
+                    <label class="feature-item">
+
+                      <span class="feature-info">
+                        <img src="/assets/icons/features/more-from-yt.svg" alt="">
+
+                        <span>Hide More from YouTube</span>
+                      </span>
+
+                      <span class="toggle">
+                        <input
+                          type="checkbox"
+                          class="feature-toggle"
+                          data-setting="hideMoreFromYouTube"
+                        />
+                        <span class="toggle-slider"></span>
+                      </span>
+
+                    </label>
+                  </li>
+
+                </ul>
+
+              </section>
+
+            <!-- <div class="disabled-overlay"></div> -->
+            </section>
+
+            <section class="page allowlist-page">
+
+              <header class="allowlist-header">
+                <div class="allowlist-title">
+                  <h2>Allowlist</h2>
+                  <p>
+                    Allow content only from channels you approve. Add channels automatically
+                    or manually and manage your allowlist.
+                  </p>
+                </div>
+              </header>
+
+
+              <!-- Automatic Detection -->
+              <section class="allowlist-section detection-section">
+
+                <div class="allowlist-section-header">
+                  <div>
+                    <h3>Automatic Detection</h3>
+                    <p>
+                      Detect the channel from the YouTube page you're currently viewing.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="detection-card">
+
+  <div class="detected-channel">
+
+    <div class="channel-icon">
+      <span>Y</span>
+    </div>
+
+    <div class="channel-info">
+      <span class="channel-label">Detected channel</span>
+      <span class="channel-name">No channel detected</span>
+    </div>
+
+  </div>
+
+  <button
+    type="button"
+    class="allowlist-action-btn automatic-detected-allowlist-btn"
+    disabled
+  >
+    Add
+  </button>
+
+</div>
+
+                <p class="section-hint">
+                  Automatic detection works on YouTube watch pages and channel pages.
+                </p>
+
+              </section>
+
+
+              <!-- Manual Detection -->
+              <section class="allowlist-section manual-section">
+
+                <div class="allowlist-section-header">
+                  <div>
+                    <h3>Add Manually</h3>
+                    <p>
+                      Add a channel by pasting a YouTube watch or channel page link.
+                    </p>
+                  </div>
+                </div>
+
+                <form class="manual-detection-form">
+
+                  <div class="input-wrapper">
                     <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hideHomeFeed"
+                      type="url"
+                      class="manual-channel-input"
+                      placeholder="Paste a YouTube watch or channel link"
+                      aria-label="YouTube channel or watch page link"
                     />
-                    <span class="toggle-slider"></span>
-                  </span>
+                  </div>
 
-                </label>
-              </li>
+                  <button
+                    type="submit"
+                    class="allowlist-action-btn manual-detected-allowlist-btn"
+                  >
+                    Add
+                  </button>
 
+                </form>
 
-              <li>
-                <label class="feature-item">
+                <p class="section-hint">
+                  We'll identify the channel from the link and add it to your allowlist.
+                </p>
 
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/shorts.svg" alt="">
+              </section>
 
-                    <span>Hide Shorts</span>
-                  </span>
 
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hideShorts"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
+              <!-- Allowlisted Channels -->
+              <section class="allowlist-section channels-section">
 
-                </label>
-              </li>
+                <div class="allowlist-section-header">
+                  <div>
+                    <h3>Allowlisted Channels</h3>
+                    <p>
+                      Channels that are always allowed to show content.
+                    </p>
+                  </div>
 
+                  <span class="channel-count">3</span>
+                </div>
 
-              <li>
-                <label class="feature-item">
 
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/mixes.svg" alt="">
+                <ul class="allowlisted-channel-list">
 
-                    <span>Hide Mixes</span>
-                  </span>
+                  <li class="allowlisted-channel-item">
 
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hideMix"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
+                    <div class="allowlisted-channel-info">
 
-                </label>
-              </li>
+                      <div class="channel-avatar">
+                        M
+                      </div>
 
-              <li>
-                <label class="feature-item">
+                      <span class="allowlisted-channel-name">
+                        Mr Beast
+                      </span>
 
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/search.svg" alt="">
+                    </div>
 
-                    <span>Hide Search Suggestions</span>
-                  </span>
+                    <button
+                      type="button"
+                      class="remove-channel-btn"
+                      aria-label="Remove Mr Beast from allowlist"
+                    >
+                      Remove
+                    </button>
 
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hideSearchSuggestions"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
+                  </li>
 
-                </label>
-              </li>
 
-              <li>
-                <label class="feature-item">
+                  <li class="allowlisted-channel-item">
 
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/scroll.svg" alt="">
+                    <div class="allowlisted-channel-info">
 
-                    <span>Disable Infinite Scrolling</span>
-                  </span>
+                      <div class="channel-avatar">
+                        C
+                      </div>
 
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="disableInfiniteScrolling"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
+                      <span class="allowlisted-channel-name">
+                        Codeacademy
+                      </span>
 
-                </label>
-              </li>
+                    </div>
 
-            </ul>
+                    <button
+                      type="button"
+                      class="remove-channel-btn"
+                      aria-label="Remove Codeacademy from allowlist"
+                    >
+                      Remove
+                    </button>
 
-          </section>
+                  </li>
 
-          <section class="settings-section">
 
-            <div class="section-header">
+                  <li class="allowlisted-channel-item">
 
-              <div class="section-icon">
-                <img src="/assets/icons/sections/watch-page.svg" alt="">
-              </div>
+                    <div class="allowlisted-channel-info">
 
-              <div class="section-heading">
-                <h2>Watch Page</h2>
-                <p>Customize the watch page experience.</p>
-              </div>
+                      <div class="channel-avatar">
+                        C
+                      </div>
 
-            </div>
+                      <span class="allowlisted-channel-name">
+                        Cocomelon
+                      </span>
 
+                    </div>
 
-            <ul class="feature-list">
+                    <button
+                      type="button"
+                      class="remove-channel-btn"
+                      aria-label="Remove Cocomelon from allowlist"
+                    >
+                      Remove
+                    </button>
 
-              <li>
-                <label class="feature-item">
+                  </li>
 
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/sidebar.svg" alt="">
+                </ul>
 
-                    <span>Hide Video Sidebar</span>
-                  </span>
+                <p class="section-hint">
+                  Allowlisted channels will continue to show content when restrictions are enabled.
+                </p>
 
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hideRecommendations"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
+              </section>
 
-                </label>
-              </li>
+            </section>
 
-
-              <li>
-                <label class="feature-item">
-
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/comments.svg" alt="">
-
-                    <span>Hide Comments</span>
-                  </span>
-
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hideComments"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
-
-                </label>
-              </li>
-
-
-              <li>
-                <label class="feature-item">
-
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/end-screens.svg" alt="">
-
-                    <span>Hide End Screens</span>
-                  </span>
-
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hideEndScreens"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
-
-                </label>
-              </li>
-
-              <li>
-                <label class="feature-item">
-
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/playlist.svg" alt="">
-
-                    <span>Hide Playlist Panel</span>
-                  </span>
-
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hidePlaylist"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
-
-                </label>
-              </li>
-
-              <li>
-                <label class="feature-item">
-
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/live-chat.svg" alt="">
-
-                    <span>Hide Live Chat</span>
-                  </span>
-
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hideLiveChat"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
-
-                </label>
-              </li>
-
-            </ul>
-
-          </section>
-
-          <section class="settings-section">
-
-            <div class="section-header">
-
-              <div class="section-icon">
-                <img src="/assets/icons/sections/navigation.svg" alt="">
-              </div>
-
-              <div class="section-heading">
-                <h2>Navigation</h2>
-                <p>Configure YouTube Navigation Elements.</p>
-              </div>
-
-            </div>
-
-
-            <ul class="feature-list">
-
-              <li>
-                <label class="feature-item">
-
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/notifications.svg" alt="">
-
-                    <span>Hide Notifications</span>
-                  </span>
-
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hideNotificationsBtn"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
-
-                </label>
-              </li>
-
-
-              <li>
-                <label class="feature-item">
-
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/explore.svg" alt="">
-
-                    <span>Hide Explore</span>
-                  </span>
-
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hideExplore"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
-
-                </label>
-              </li>
-
-
-              <li>
-                <label class="feature-item">
-
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/subscriptions.svg" alt="">
-
-                    <span>Hide Subscriptions</span>
-                  </span>
-
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hideSubscriptions"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
-
-                </label>
-              </li>
-
-            </ul>
-
-          </section>
-
-          <section class="settings-section">
-
-            <div class="section-header">
-
-              <div class="section-icon">
-                <img src="/assets/icons/sections/sections.svg" alt="">
-              </div>
-
-              <div class="section-heading">
-                <h2>Sections</h2>
-                <p>Adjust visibility of YouTube sections.</p>
-              </div>
-
-            </div>
-
-
-            <ul class="feature-list">
-
-              <li>
-                <label class="feature-item">
-
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/playables.svg" alt="">
-
-                    <span>Hide YouTube Playables</span>
-                  </span>
-
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hidePlayables"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
-
-                </label>
-              </li>
-
-
-              <li>
-                <label class="feature-item">
-
-                  <span class="feature-info">
-                    <img src="/assets/icons/features/more-from-yt.svg" alt="">
-
-                    <span>Hide More from YouTube</span>
-                  </span>
-
-                  <span class="toggle">
-                    <input
-                      type="checkbox"
-                      class="feature-toggle"
-                      data-setting="hideMoreFromYouTube"
-                    />
-                    <span class="toggle-slider"></span>
-                  </span>
-
-                </label>
-              </li>
-
-            </ul>
-
-          </section>
+          </div>
 
           <div class="disabled-overlay"></div>
-
         </main>
 
         <!-- Support UI -->

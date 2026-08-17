@@ -163,3 +163,30 @@ supportBackBtn.addEventListener("click", () => {
   supportView.hidden = true;
   mainView.hidden = false;
 });
+
+
+
+
+
+//page navigation
+
+const navItems = document.querySelectorAll(".nav-item");
+const pageSlider = document.querySelector(".page-slider");
+
+navItems.forEach((item) => {
+  item.addEventListener("click", () => {
+    const page = item.dataset.page;
+
+    navItems.forEach((nav) => {
+      nav.classList.remove("active");
+    });
+
+    item.classList.add("active");
+
+    if (page === "home") {
+      pageSlider.style.transform = "translateX(0)";
+    } else if (page === "allowlist") {
+      pageSlider.style.transform = "translateX(-50%)";
+    }
+  });
+});
