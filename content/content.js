@@ -171,3 +171,20 @@ function applyAllFeatures() {
   toggleSearchSuggestions(settings.hideSearchSuggestions);
   startInfiniteScrollingObserver(settings.disableInfiniteScrolling);
 }
+
+
+
+
+
+
+
+window.addEventListener("message", (event) => {
+    if (event.source !== window) return;
+
+    if (event.data?.type !== "YOUTUBE_CHANNEL_INFO") return;
+
+    const { channelId, channelName } = event.data;
+
+    console.log("Channel ID:", channelId);
+    console.log("Channel Name:", channelName);
+});
