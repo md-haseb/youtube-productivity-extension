@@ -1,19 +1,21 @@
-const playerResponse = window.ytInitialPlayerResponse;
+function detectChannelInfo() {
+    const playerResponse = window.ytInitialPlayerResponse;
 
-const channelId = playerResponse?.videoDetails?.channelId;
-const channelName = playerResponse?.videoDetails?.author;
+    const channelId = playerResponse?.videoDetails?.channelId;
+    const channelName = playerResponse?.videoDetails?.author;
 
-if (channelId && channelName) {
-    window.postMessage(
-        {
-            type: "YOUTUBE_CHANNEL_INFO",
-            channelId,
-            channelName
-        },
-        "*"
-    );
-} else {
-  console.log('User is not in watch page');
+    if (channelId && channelName) {
+        window.postMessage(
+            {
+                type: "YOUTUBE_CHANNEL_INFO",
+                channelId,
+                channelName
+            },
+            "*"
+        );
+    } else {
+    console.log('Channel not found in DOM');
+    }
 }
 
 
@@ -21,7 +23,7 @@ if (channelId && channelName) {
 
 
 
-let currentUrl = location.href;
+let currentUrl = null;
 
 function isWatchPage(url) {
     return (
@@ -45,6 +47,7 @@ function handleNavigation() {
 
     if (isWatchPage(url)) {
         console.log("Watch page detected");
+        detectChannelInfo();
 
         // Channel detection will go here
     } else {
@@ -52,19 +55,30 @@ function handleNavigation() {
     }
 }
 
+handleNavigation();
 setInterval(handleNavigation, 500);
 
-function checkInitialPage() {
-    const url = new URL(location.href);
 
-    if (isWatchPage(url)) {
-        console.log("Initial watch page detected");
 
-        // Channel detection will go here
-    } else {
-        console.log("Initial page is not a watch page");
-    }
-}
+
+
+
+// function checkInitialPage() {
+//     const url = new URL(location.href);
+
+//     if (isWatchPage(url)) {
+//         console.log("Initial watch page detected");
+
+//         // Channel detection will go here
+//     } else {
+//         console.log("Initial page is not a watch page");
+//     }
+// }
+
+
+
+
+
 
 // Detect YouTube SPA navigation
 // const originalPushState = history.pushState;
@@ -84,5 +98,11 @@ function checkInitialPage() {
 
 // window.addEventListener("popstate", handleNavigation);
 
+
+
+
+
+
+
 // Check the page when the script initially loads
-checkInitialPage();
+// checkInitialPage();
