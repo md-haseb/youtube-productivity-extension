@@ -179,12 +179,25 @@ function applyAllFeatures() {
 
 
 window.addEventListener("message", (event) => {
-    if (event.source !== window) return;
+    // Only accept messages from this same page
+    if (event.source !== window) {
+        return;
+    }
 
-    if (event.data?.type !== "YOUTUBE_CHANNEL_INFO") return;
+    if (event.data?.type !== "CHANNEL_INFO") {
+        return;
+    }
 
-    const { channelId, channelName } = event.data;
+    const channelInfo = event.data.channelInfo;
 
-    console.log("Channel ID:", channelId);
-    console.log("Channel Name:", channelName);
+    console.log("Received channel info:", channelInfo);
+
+    console.log("Channel ID:", channelInfo.channelId);
+    console.log("Channel Name:", channelInfo.channelName);
+    console.log("Channel Icon:", channelInfo.channelIcon);
+
+    chrome.runtime.sendMessage({
+        type: "CHANNEL_INFO",
+        channelInfo
+    });
 });

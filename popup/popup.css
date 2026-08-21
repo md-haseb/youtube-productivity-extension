@@ -840,6 +840,12 @@ body {
   font-weight: 700;
 }
 
+.channel-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 
 /* =========================================
    Channel Information
@@ -871,7 +877,7 @@ body {
    Channel Name
    ========================================= */
 
-.channel-name {
+.channel-detection-status {
   color: #303038;
 
   font-size: 13px;
