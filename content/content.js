@@ -177,7 +177,6 @@ function applyAllFeatures() {
 
 
 
-
 window.addEventListener("message", (event) => {
     // Only accept messages from this same page
     if (event.source !== window) {
@@ -188,16 +187,52 @@ window.addEventListener("message", (event) => {
         return;
     }
 
-    const channelInfo = event.data.channelInfo;
+    const channelInfo = {
+        ...event.data.channelInfo,
+        channelIcon: event.data.channelInfo.channelIcon ||
+            chrome.runtime.getURL(
+                "assets/icons/allowlist/default-channel-icon.svg"
+            )
+    };
 
     console.log("Received channel info:", channelInfo);
 
     console.log("Channel ID:", channelInfo.channelId);
     console.log("Channel Name:", channelInfo.channelName);
     console.log("Channel Icon:", channelInfo.channelIcon);
+    console.log(
+        "Channel Detection Status:",
+        channelInfo.channelDetectionStatus
+    );
 
     chrome.runtime.sendMessage({
         type: "CHANNEL_INFO",
         channelInfo
     });
 });
+
+
+// window.addEventListener("message", (event) => {
+//     // Only accept messages from this same page
+//     if (event.source !== window) {
+//         return;
+//     }
+
+//     if (event.data?.type !== "CHANNEL_INFO") {
+//         return;
+//     }
+
+//     const channelInfo = event.data.channelInfo;
+
+//     console.log("Received channel info:", channelInfo);
+
+//     console.log("Channel ID:", channelInfo.channelId);
+//     console.log("Channel Name:", channelInfo.channelName);
+//     console.log("Channel Icon:", channelInfo.channelIcon);
+//     console.log("Channel Detection Status:", channelInfo.channelDetectionStatus);
+
+//     chrome.runtime.sendMessage({
+//         type: "CHANNEL_INFO",
+//         channelInfo
+//     });
+// });

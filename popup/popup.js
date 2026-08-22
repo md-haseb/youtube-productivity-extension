@@ -202,7 +202,12 @@ const allowlistActionButton = document.querySelector('.allowlist-action-btn');
 chrome.storage.session.get("currentChannelInfo", ({ currentChannelInfo }) => {
     console.log(currentChannelInfo);
     channelName.textContent = currentChannelInfo.channelName;
-    channelDetectionStatus.textContent = 'Channel Detected';
+    channelDetectionStatus.textContent = currentChannelInfo.channelDetectionStatus;
     channelIconImage.src = currentChannelInfo.channelIcon;
-    allowlistActionButton.removeAttribute("disabled");
+    
+    if (currentChannelInfo?.channelId) {
+        allowlistActionButton.removeAttribute("disabled");
+    } else {
+        allowlistActionButton.setAttribute("disabled", "");
+    }
 });

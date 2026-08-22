@@ -70,7 +70,8 @@ function waitForChannelInfo() {
                         type: "CHANNEL_INFO",
                         channelInfo: {
                             ...channelInfo,
-                            channelIcon: src
+                            channelIcon: src,
+                            channelDetectionStatus: 'Channel Detected'
                         }
                     }, "*");
                 });
@@ -121,6 +122,7 @@ function handleNavigation() {
         // Channel detection will go here
     } else {
         console.log("Not a watch page");
+        sendDefaultChannelInfo();
     }
 }
 
@@ -172,4 +174,20 @@ function waitForChannelIcon(callback) {
         observer.disconnect();
         console.log("Channel icon not found");
     }, 5000);
+}
+
+
+
+
+
+function sendDefaultChannelInfo() {
+    window.postMessage({
+        type: "CHANNEL_INFO",
+        channelInfo: {
+            channelId: null,
+            channelName: "—",
+            channelIcon: null,
+            channelDetectionStatus: "No channel detected"
+        }
+    }, "*");
 }
