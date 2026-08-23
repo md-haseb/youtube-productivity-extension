@@ -198,16 +198,207 @@ const channelName = document.querySelector('.channel-label');
 const channelDetectionStatus = document.querySelector('.channel-detection-status');
 const channelIconImage = document.querySelector('.channel-icon-img');
 const allowlistActionButton = document.querySelector('.allowlist-action-btn');
+const allowlistedChannelList = document.querySelector('.allowlisted-channel-list');
 
-chrome.storage.session.get("currentChannelInfo", ({ currentChannelInfo }) => {
-    console.log(currentChannelInfo);
-    channelName.textContent = currentChannelInfo.channelName;
-    channelDetectionStatus.textContent = currentChannelInfo.channelDetectionStatus;
-    channelIconImage.src = currentChannelInfo.channelIcon;
-    
-    if (currentChannelInfo?.channelId) {
-        allowlistActionButton.removeAttribute("disabled");
-    } else {
-        allowlistActionButton.setAttribute("disabled", "");
+
+
+
+
+let currentChannelInfo = null;
+
+chrome.storage.session.get("currentChannelInfo", (result) => {
+    currentChannelInfo = result.currentChannelInfo;
+
+    if (!currentChannelInfo) {
+        return;
     }
+
+    console.log(currentChannelInfo);
+
+    channelName.textContent = currentChannelInfo.channelName;
+    channelDetectionStatus.textContent =
+        currentChannelInfo.channelDetectionStatus;
+    channelIconImage.src = currentChannelInfo.channelIcon;
+
+    if (!currentChannelInfo.channelId) {
+        allowlistActionButton.setAttribute("disabled", "");
+        return;
+    }
+
+    chrome.storage.sync.get(
+        "allowlistedChannels",
+        ({ allowlistedChannels = [] }) => {
+
+            const alreadyAllowlisted = allowlistedChannels.some(
+                channel => channel.channelId === currentChannelInfo.channelId
+            );
+
+            if (alreadyAllowlisted) {
+                allowlistActionButton.setAttribute("disabled", "");
+                allowlistActionButton.textContent = "Added";
+            } else {
+                allowlistActionButton.removeAttribute("disabled");
+                allowlistActionButton.textContent = "Add";
+            }
+        }
+    );
 });
+
+
+
+
+
+
+allowlistActionButton.addEventListener('click', () => {
+    if (!currentChannelInfo?.channelId) {
+        return;
+    }
+
+    addChannelToAllowlist(
+        {
+            channelId: currentChannelInfo.channelId,
+            channelName: currentChannelInfo.channelName,
+            channelIcon: currentChannelInfo.channelIcon
+        },
+        (added) => {
+            if (!added) {
+                return;
+            }
+
+            const channelItem = createAllowlistedChannelItem(
+                currentChannelInfo.channelId,
+                currentChannelInfo.channelName,
+                currentChannelInfo.channelIcon
+            );
+
+            allowlistedChannelList.prepend(channelItem);
+
+            allowlistActionButton.textContent = 'Added';
+            allowlistActionButton.setAttribute('disabled', '');
+        }
+    );
+});
+
+
+
+
+
+function createAllowlistedChannelItem(channelId, channelName, channelIcon) {
+    const listItem = document.createElement("li");
+    listItem.className = "allowlisted-channel-item";
+
+    const channelInfo = document.createElement("div");
+    channelInfo.className = "allowlisted-channel-info";
+
+    const channelAvatar = document.createElement("div");
+    channelAvatar.className = "channel-avatar";
+
+    const image = document.createElement("img");
+    image.src = channelIcon;
+    image.alt = `${channelName} channel icon`;
+
+    const name = document.createElement("span");
+    name.className = "allowlisted-channel-name";
+    name.textContent = channelName;
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "remove-channel-btn";
+    removeButton.setAttribute(
+        "aria-label",
+        `Remove ${channelName} from allowlist`
+    );
+    removeButton.textContent = "Remove";
+
+    removeButton.addEventListener("click", () => {
+        removeChannelFromAllowlist(channelId, listItem);
+    });
+
+    channelAvatar.appendChild(image);
+    channelInfo.append(channelAvatar, name);
+    listItem.append(channelInfo, removeButton);
+
+    return listItem;
+}
+
+
+
+
+
+function removeChannelFromAllowlist(channelId, listItem) {
+    chrome.storage.sync.get(
+        "allowlistedChannels",
+        ({ allowlistedChannels = [] }) => {
+
+            const updatedChannels = allowlistedChannels.filter(
+                channel => channel.channelId !== channelId
+            );
+
+            chrome.storage.sync.set(
+                { allowlistedChannels: updatedChannels },
+                () => {
+                    if (chrome.runtime.lastError) {
+                        console.error(
+                            "Failed to remove channel:",
+                            chrome.runtime.lastError
+                        );
+                        return;
+                    }
+
+                    listItem.remove();
+                }
+            );
+        }
+    );
+}
+
+
+
+
+
+function addChannelToAllowlist(channel, callback) {
+    chrome.storage.sync.get(
+        "allowlistedChannels",
+        ({ allowlistedChannels = [] }) => {
+
+            const alreadyExists = allowlistedChannels.some(
+                item => item.channelId === channel.channelId
+            );
+
+            if (alreadyExists) {
+                callback(false);
+                return;
+            }
+
+            allowlistedChannels.unshift(channel);
+
+            chrome.storage.sync.set(
+                { allowlistedChannels },
+                () => {
+                    callback(true);
+                }
+            );
+        }
+    );
+}
+
+
+
+
+
+
+
+chrome.storage.sync.get(
+    "allowlistedChannels",
+    ({ allowlistedChannels = [] }) => {
+        allowlistedChannels.forEach(channel => {
+            const channelItem = createAllowlistedChannelItem(
+                channel.channelId,
+                channel.channelName,
+                channel.channelIcon
+            );
+
+            allowlistedChannelList.appendChild(channelItem);
+        });
+    }
+);
