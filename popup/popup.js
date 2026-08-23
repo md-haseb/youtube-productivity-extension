@@ -191,7 +191,10 @@ navItems.forEach((item) => {
   });
 });
 
-
+//UCTNQuDyqYnFJPME529Twl0g
+//UCgdKNcImQiLOI4NYoYaYrEw
+//UCIXugjH-g5bFUqLoYRgiSbg
+//UCeVMnSShP_Iviwkknt83cww
 
 
 const channelName = document.querySelector('.channel-label');
@@ -219,6 +222,7 @@ chrome.storage.session.get("currentChannelInfo", (result) => {
     channelDetectionStatus.textContent =
         currentChannelInfo.channelDetectionStatus;
     channelIconImage.src = currentChannelInfo.channelIcon;
+    console.log(currentChannelInfo.channelId);
 
     if (!currentChannelInfo.channelId) {
         allowlistActionButton.setAttribute("disabled", "");

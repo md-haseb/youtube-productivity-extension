@@ -191,3 +191,50 @@ function sendDefaultChannelInfo() {
         }
     }, "*");
 }
+
+
+
+
+
+
+
+
+
+
+
+
+function extractYouTubeHandle() {
+    try {
+        const pathname = location.pathname;
+        const match = pathname.match(/^\/(@[^/]+)/);
+
+        return match ? match[1] : null;
+    } catch {
+        return null;
+    }
+}
+
+
+
+function waitForYtInitialData() {
+    let attempts = 0;
+
+    const interval = setInterval(() => {
+        attempts++;
+
+        if (window.ytInitialData) {
+            clearInterval(interval);
+
+            console.log(attempts);
+            console.log("Found:", window.ytInitialData);
+            return;
+        }
+
+        if (attempts >= 100) {
+            clearInterval(interval);
+
+            console.log("ytInitialData not found");
+        }
+    }, 100);
+}
+waitForYtInitialData();
