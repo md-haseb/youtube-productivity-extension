@@ -199,7 +199,7 @@ const channelDetectionStatus = document.querySelector('.channel-detection-status
 const channelIconImage = document.querySelector('.channel-icon-img');
 const allowlistActionButton = document.querySelector('.allowlist-action-btn');
 const allowlistedChannelList = document.querySelector('.allowlisted-channel-list');
-
+const allowlistedChannelCount = document.querySelector('.channel-count');
 
 
 
@@ -351,6 +351,8 @@ function removeChannelFromAllowlist(channelId, listItem) {
                         allowlistActionButton.disabled = false;
                         allowlistActionButton.textContent = "Add";
                     }
+
+                    updateAllowlistCount();
                 }
             );
         }
@@ -380,7 +382,18 @@ function addChannelToAllowlist(channel, callback) {
             chrome.storage.sync.set(
                 { allowlistedChannels },
                 () => {
+                    if (chrome.runtime.lastError) {
+                        console.error(
+                            "Failed to add channel:",
+                            chrome.runtime.lastError
+                        );
+
+                        callback(false);
+                        return;
+                    }
+
                     callback(true);
+                    updateAllowlistCount();
                 }
             );
         }
@@ -405,5 +418,20 @@ chrome.storage.sync.get(
 
             allowlistedChannelList.appendChild(channelItem);
         });
+
+        allowlistedChannelCount.textContent = allowlistedChannels.length;
     }
 );
+
+
+
+
+
+function updateAllowlistCount() {
+    chrome.storage.sync.get(
+        "allowlistedChannels",
+        ({ allowlistedChannels = [] }) => {
+            allowlistedChannelCount.textContent = allowlistedChannels.length;
+        }
+    );
+}
