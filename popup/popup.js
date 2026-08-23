@@ -346,6 +346,11 @@ function removeChannelFromAllowlist(channelId, listItem) {
                     }
 
                     listItem.remove();
+
+                    if (currentChannelInfo?.channelId === channelId) {
+                        allowlistActionButton.disabled = false;
+                        allowlistActionButton.textContent = "Add";
+                    }
                 }
             );
         }
