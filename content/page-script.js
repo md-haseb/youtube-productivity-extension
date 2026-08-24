@@ -203,38 +203,158 @@ function sendDefaultChannelInfo() {
 
 
 
-function extractYouTubeHandle() {
-    try {
-        const pathname = location.pathname;
-        const match = pathname.match(/^\/(@[^/]+)/);
+// function extractYouTubeHandle() {
+//     try {
+//         const pathname = location.pathname;
+//         const match = pathname.match(/^\/(@[^/]+)/);
 
-        return match ? match[1] : null;
-    } catch {
-        return null;
-    }
+//         return match ? match[1] : null;
+//     } catch {
+//         return null;
+//     }
+// }
+// function extractYouTubeHandle() {
+//     try {
+//         const pathname = location.pathname;
+//         console.log("pathname:", pathname);
+
+//         const match = pathname.match(/^\/(@[^/]+)/);
+//         console.log("match:", match);
+
+//         return match ? match[1] : null;
+//     } catch (error) {
+//         console.log("Handle extraction error:", error);
+//         return null;
+//     }
+// }
+function waitForYouTubeHandle() {
+    return new Promise((resolve, reject) => {
+        let attempts = 0;
+
+        const interval = setInterval(() => {
+            attempts++;
+
+            const pathname = location.pathname;
+            const match = pathname.match(/^\/(@[^/]+)/);
+
+            if (match) {
+                clearInterval(interval);
+                resolve(match[1]);
+                return;
+            }
+
+            if (attempts >= 100) {
+                clearInterval(interval);
+                reject(new Error("YouTube handle not found"));
+            }
+        }, 100);
+    });
 }
+
+
 
 
 
 function waitForYtInitialData() {
-    let attempts = 0;
+    return new Promise((resolve, reject) => {
+        let attempts = 0;
 
-    const interval = setInterval(() => {
-        attempts++;
+        const interval = setInterval(() => {
+            attempts++;
 
-        if (window.ytInitialData) {
-            clearInterval(interval);
+            if (window.ytInitialData) {
+                clearInterval(interval);
 
-            console.log(attempts);
-            console.log("Found:", window.ytInitialData);
-            return;
-        }
+                console.log(attempts);
+                console.log("Found:", window.ytInitialData);
 
-        if (attempts >= 100) {
-            clearInterval(interval);
+                resolve(window.ytInitialData);
+                return;
+            }
 
-            console.log("ytInitialData not found");
-        }
-    }, 100);
+            if (attempts >= 100) {
+                clearInterval(interval);
+
+                reject(new Error("ytInitialData not found"));
+            }
+        }, 100);
+    });
 }
-waitForYtInitialData();
+
+
+
+
+
+function findChannelId(data, handle) {
+    if (!data || typeof data !== "object") {
+        return null;
+    }
+
+    const endpoint = data.browseEndpoint;
+    const command = data.commandMetadata?.webCommandMetadata;
+
+    if (endpoint || command) {
+        console.log({
+            endpoint,
+            command
+        });
+    }
+
+    // if (!data || typeof data !== "object") {
+    //     return null;
+    // }
+
+    // const endpoint = data.browseEndpoint;
+    // const command = data.commandMetadata?.webCommandMetadata;
+    // console.log(endpoint);
+    // console.log(command);
+
+    // if (
+    //     endpoint?.browseId?.startsWith("UC") &&
+    //     endpoint?.canonicalBaseUrl === handle &&
+    //     command?.url === handle &&
+    //     command?.webPageType === "WEB_PAGE_TYPE_CHANNEL"
+    // ) {
+    //     console.log(endpoint.browseId);
+    //     return endpoint.browseId;
+    // }
+
+    for (const value of Object.values(data)) {
+        const result = findChannelId(value, handle);
+
+        if (result) return result;
+    }
+
+    console.log('nothing found');
+    return null;
+}
+
+
+
+
+async function main() {
+    // const handle = extractYouTubeHandle();
+
+    // if (!handle) {
+    //     console.log("YouTube handle not found");
+    //     return;
+    // }
+
+    try {
+        const handle = await waitForYouTubeHandle();
+
+        console.log("Handle:", handle);
+
+        const initialDataObj = await waitForYtInitialData();
+
+        const channelId = findChannelId(initialDataObj, handle);
+
+        console.log("Channel ID:", channelId);
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+main();
+
+
