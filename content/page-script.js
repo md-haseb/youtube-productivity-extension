@@ -34,6 +34,8 @@ function detectChannelInfoFromChannelPage() {
         'ytd-video-description-infocards-section-renderer ytd-button-renderer yt-button-shape a[href^="/channel/"][href$="/about"]'
     );
 
+    console.log(channelIdLink);
+
     const href = channelIdLink?.getAttribute("href");
 
     const channelId = href
@@ -44,8 +46,8 @@ function detectChannelInfoFromChannelPage() {
     //     ?.textContent
     //     .trim();
 
-    console.log(channelIdLink);
-    console.log(channelId);
+    // console.log(channelIdLink);
+    // console.log(channelId);
 
     return {
         channelId,
@@ -118,42 +120,177 @@ function waitForChannelInfo() {
 
 
 
+async function waitForChannelInfoOnChannelPage() {
+    const handle = `/${await waitForYouTubeHandle()}`;
 
+    console.log("Handle:", handle);
 
-let channelPageInfoInterval = null;
+    return new Promise((resolve, reject) => {
+        let timeout;
 
-function waitForChannelInfoOnChannelPage() {
-    if (channelPageInfoInterval) {
-        clearInterval(channelPageInfoInterval);
-    }
+        const checkChannel = () => {
+            const link = document.querySelector(
+                'ytd-video-description-infocards-section-renderer a#header'
+            );
 
-    let attempts = 0;
-    const maxAttempts = 50;
+            const domHandle = link?.getAttribute('href');
 
-    channelPageInfoInterval = setInterval(() => {
-        attempts++;
+            console.log(handle, domHandle);
 
-        const channelInfo = detectChannelInfoFromChannelPage();
+            if (domHandle === handle) {
+                const channelInfo = detectChannelInfoFromChannelPage();
 
-        if (channelInfo?.channelId) {
-            console.log(attempts);
-            console.log("Correct channel info found:", channelInfo);
+                if (channelInfo?.channelId) {
+                    resolve(channelInfo);
+                    return true;
+                }
+            }
 
-            clearInterval(channelPageInfoInterval);
-            channelPageInfoInterval = null;
+            return false;
+        };
 
-            // Continue with icon detection...
+        // Check immediately
+        if (checkChannel()) {
             return;
         }
 
-        if (attempts >= maxAttempts) {
-            console.log("Channel info not found");
+        const observer = new MutationObserver(() => {
+            if (checkChannel()) {
+                observer.disconnect();
+                clearTimeout(timeout);
+            }
+        });
 
-            clearInterval(channelPageInfoInterval);
-            channelPageInfoInterval = null;
-        }
-    }, 100);
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['href']
+        });
+
+        timeout = setTimeout(() => {
+            observer.disconnect();
+            reject(
+                new Error("Channel info not found from DOM")
+            );
+        }, 5000);
+    });
 }
+
+// async function waitForChannelInfoOnChannelPage(callback) {
+//     let handle = await waitForYouTubeHandle();
+
+//     handle = `/${handle}`;
+
+//     console.log("Handle:", handle);
+
+//     let timeout;
+
+//     const checkChannel = () => {
+//         const link = document.querySelector(
+//             'ytd-video-description-infocards-section-renderer a#header'
+//         );
+
+//         const domHandle = link?.getAttribute('href');
+//         console.log(handle, domHandle);
+
+//         // const canonicalUrl = document
+//         //     .querySelector('link[rel="canonical"]')
+//         //     ?.getAttribute("href");
+
+//         // const domHandle2 = canonicalUrl
+//         //     ? new URL(canonicalUrl).pathname
+//         //     : null;
+
+//         // console.log(domHandle2);
+//         console.log(handle, domHandle);
+//         console.log(typeof handle, typeof domHandle);
+
+//         if (domHandle === handle) {
+//             const channelInfo = detectChannelInfoFromChannelPage();
+//             console.log('hello');
+
+//             if (channelInfo?.channelId) {
+//                 callback(channelInfo);
+//                 return true;
+//             }
+//         }
+
+//         return false;
+//     };
+
+//     // Check immediately
+//     if (checkChannel()) return;
+
+//     const observer = new MutationObserver((mutations) => {
+//         console.log("Mutation detected:", mutations.length);
+
+//         if (checkChannel()) {
+//             observer.disconnect();
+//             clearTimeout(timeout);
+//         }
+//     });
+
+//     observer.observe(document.body, {
+//         childList: true,
+//         subtree: true,
+//         attributes: true,
+//         attributeFilter: ['href']
+//     });
+
+//     timeout = setTimeout(() => {
+//         observer.disconnect();
+//         console.log("Channel info not found");
+//     }, 5000);
+// }
+// let channelPageInfoInterval = null;
+
+// async function waitForChannelInfoOnChannelPage() {
+//     let handle = await waitForYouTubeHandle();
+
+//     handle = `/${handle}`;
+
+//     console.log("Handle:", handle);
+
+//     if (channelPageInfoInterval) {
+//         clearInterval(channelPageInfoInterval);
+//     }
+
+//     let attempts = 0;
+//     const maxAttempts = 50;
+
+//     channelPageInfoInterval = setInterval(() => {
+//         attempts++;
+
+//         const link = document.querySelector('ytd-video-description-infocards-section-renderer a#header');
+//         console.log(link);
+//         const domHandle = link?.getAttribute('href');
+//         console.log(domHandle);
+//         console.log(handle);
+
+//         if(handle === domHandle) {
+//             const channelInfo = detectChannelInfoFromChannelPage();
+
+//             if (channelInfo?.channelId) {
+//                 console.log(attempts);
+//                 console.log("Correct channel info found:", channelInfo);
+
+//                 clearInterval(channelPageInfoInterval);
+//                 channelPageInfoInterval = null;
+
+//                 // Continue with icon detection...
+//                 return;
+//             }
+//         }
+
+//         if (attempts >= maxAttempts) {
+//             console.log("Channel info not found");
+
+//             clearInterval(channelPageInfoInterval);
+//             channelPageInfoInterval = null;
+//         }
+//     }, 100);
+// }
 
 
 
@@ -175,7 +312,7 @@ function isChannelPage(url) {
     );
 }
 
-function handleNavigation() {
+async function handleNavigation() {
     const newUrl = location.href;
 
     if (newUrl === prevUrl) {
@@ -193,10 +330,50 @@ function handleNavigation() {
         waitForChannelInfo();
 
         // Channel detection will go here
-    } else if (isChannelPage(url)) {
+    } 
+    else if (isChannelPage(url)) {
         console.log("Channel Page Detected");
-        waitForChannelInfoOnChannelPage();
-    } else {
+
+        try {
+            // 1. Primary: ytd-app
+            const channelInfo = await waitForCurrentChannel();
+
+            console.log("Channel info from ytd-app:", channelInfo);
+
+        } catch (error) {
+
+            try {
+                // 2. Fallback: ytInitialData
+                const channelInfo = await detectChannelInfoFromInitialData();
+
+                console.log("Channel info from ytInitialData:", channelInfo);
+
+            } catch (error) {
+
+                try {
+                    // 3. Final fallback: DOM
+                    const channelInfo = await waitForChannelInfoOnChannelPage();
+
+                    console.log("Channel info from DOM:", channelInfo);
+
+                } catch (error) {
+                    console.log("All channel detection methods failed.");
+                }
+            }
+        }
+
+        // waitForChannelInfoOnChannelPage();
+        // try {
+        //     await detectChannelInfoFromInitialData();
+        // } catch (error) {
+        //     console.log("Using fallback...");
+        //     // await waitForChannelInfoOnChannelPage();
+        //     waitForChannelInfoOnChannelPage((channelInfo) => {
+        //         console.log("Fallback channel info:", channelInfo);
+        //     });
+        // }
+    } 
+    else {
         console.log("Not a watch page");
         sendDefaultChannelInfo();
     }
@@ -293,16 +470,41 @@ function sendDefaultChannelInfo() {
 
 
 
-// function extractYouTubeHandle() {
-//     try {
-//         const pathname = location.pathname;
-//         const match = pathname.match(/^\/(@[^/]+)/);
+function extractYouTubeHandle() {
+    try {
+        const pathname = location.pathname;
+        console.log("Current pathname:", pathname);
+        const match = pathname.match(/^\/(@[^/]+)/);
 
-//         return match ? match[1] : null;
-//     } catch {
-//         return null;
-//     }
-// }
+        return match ? match[1] : null;
+    } catch {
+        return null;
+    }
+}
+
+function waitForYouTubeHandle() {
+    return new Promise((resolve, reject) => {
+        let attempts = 0;
+
+        const interval = setInterval(() => {
+            attempts++;
+
+            const handle = extractYouTubeHandle();
+
+            if (handle) {
+                clearInterval(interval);
+                resolve(handle);
+                return;
+            }
+
+            if (attempts >= 100) {
+                clearInterval(interval);
+                reject(new Error("YouTube handle not found"));
+            }
+        }, 100);
+    });
+}
+
 // function extractYouTubeHandle() {
 //     try {
 //         const pathname = location.pathname;
@@ -345,31 +547,39 @@ function sendDefaultChannelInfo() {
 
 
 
-// function waitForYtInitialData() {
-//     return new Promise((resolve, reject) => {
-//         let attempts = 0;
+function waitForYtInitialData(handle) {
+    // const handle = `/${extractYouTubeHandle()}`;
+    return new Promise((resolve, reject) => {
+        let attempts = 0;
 
-//         const interval = setInterval(() => {
-//             attempts++;
+        const interval = setInterval(() => {
+            attempts++;
 
-//             if (window.ytInitialData) {
-//                 clearInterval(interval);
+            if (window.ytInitialData) {
+                // console.log(typeof(window.ytInitialData));
+                // console.log(window.ytInitialData);
+                const ytObjectHandle = findBrowseEndpoint(window.ytInitialData, handle);
+                console.log(ytObjectHandle, ytObjectHandle?.browseId, ytObjectHandle?.canonicalBaseUrl);
 
-//                 console.log(attempts);
-//                 console.log("Found:", window.ytInitialData);
+                if(ytObjectHandle) {
+                    clearInterval(interval);
 
-//                 resolve(window.ytInitialData);
-//                 return;
-//             }
+                    console.log(attempts);
+                    console.log("Found:", ytObjectHandle);
 
-//             if (attempts >= 100) {
-//                 clearInterval(interval);
+                    resolve(ytObjectHandle);
+                    return;
+                }
+            }
 
-//                 reject(new Error("ytInitialData not found"));
-//             }
-//         }, 100);
-//     });
-// }
+            if (attempts >= 10) {
+                clearInterval(interval);
+
+                reject(new Error("YouTube initial data or channel handle not found"));
+            }
+        }, 100);
+    });
+}
 
 
 
@@ -402,6 +612,87 @@ function sendDefaultChannelInfo() {
 //     return null;
 // }
 
+
+// function findBrowseEndpoint(obj, handle) {
+//     if (!obj || typeof obj !== "object") {
+//         // console.log(typeof(obj));
+//         // console.log(obj);
+//         return null;
+//     }
+
+//     if (
+//         obj.browseEndpoint?.browseId &&
+//         obj.browseEndpoint.canonicalBaseUrl === handle
+//     ) {
+//         return {
+//             browseId: obj.browseEndpoint.browseId,
+//             canonicalBaseUrl: obj.browseEndpoint.canonicalBaseUrl
+//         };
+//     }
+
+//     for (const value of Object.values(obj)) {
+//         const result = findBrowseEndpoint(value, handle);
+
+//         if (result) {
+//             return result;
+//         }
+//     }
+
+//     return null;
+// }
+function findBrowseEndpoint(obj, handle) {
+    if (!obj || typeof obj !== "object") {
+        return null;
+    }
+
+    if (obj.browseEndpoint?.browseId) {
+        // console.log(
+        //     "Found browseEndpoint:",
+        //     obj.browseEndpoint.canonicalBaseUrl,
+        //     "| Searching:",
+        //     handle
+        // );
+
+        if (obj.browseEndpoint.canonicalBaseUrl === handle) {
+            return {
+                browseId: obj.browseEndpoint.browseId,
+                canonicalBaseUrl: obj.browseEndpoint.canonicalBaseUrl
+            };
+        }
+    }
+
+    for (const value of Object.values(obj)) {
+        const result = findBrowseEndpoint(value, handle);
+
+        if (result) {
+            return result;
+        }
+    }
+
+    return null;
+}
+// function findBrowseEndpoints(obj, handle, results = []) {
+//     if (!obj || typeof obj !== "object") {
+//         return results;
+//     }
+
+//     if (
+//         obj.browseEndpoint?.browseId &&
+//         obj.browseEndpoint.canonicalBaseUrl === handle
+//     ) {
+//         results.push({
+//             browseId: obj.browseEndpoint.browseId,
+//             canonicalBaseUrl:
+//                 obj.browseEndpoint.canonicalBaseUrl
+//         });
+//     }
+
+//     for (const value of Object.values(obj)) {
+//         findBrowseEndpoints(value, handle, results);
+//     }
+
+//     return results;
+// }
 
 
 
@@ -450,23 +741,203 @@ function sendDefaultChannelInfo() {
 
 
 
-// async function main() {
+// async function detectChannelInfoFromInitialData() {
 
 //     try {
-//         const handle = await waitForYouTubeHandle();
+//         let handle = await waitForYouTubeHandle();
+//         // let handle = extractYouTubeHandle();
+//         handle = `/${handle}`;
 
 //         console.log("Handle:", handle);
 
-//         const initialDataObj = await waitForYtInitialData();
+//         // const initialDataObj = await waitForYtInitialData(handle);
 
 //         // const channelId = findChannelId(initialDataObj, handle);
+//         // const channelId = findBrowseEndpoint(initialDataObj, handle).browseId;
+//         const channelInfo = await waitForYtInitialData(handle);
+//         const channelId = channelInfo.browseId;
 
-//         // console.log("Channel ID:", channelId);
+//         console.log("Channel ID:", channelId);
+//         // console.log("Channel handle:", handle);
 //     } catch (error) {
 //         console.log(error.message);
 //     }
 // }
 
-// main();
+// detectChannelInfoFromInitialData();
+
+
+async function detectChannelInfoFromInitialData() {
+    let handle = await waitForYouTubeHandle();
+
+    handle = `/${handle}`;
+
+    console.log("Handle:", handle);
+
+    const channelInfo = await waitForYtInitialData(handle);
+    const channelId = channelInfo.browseId;
+
+    console.log("Channel ID:", channelId);
+}
+
+
+
+
+
+
+
+
+
+
+
+function getCurrentChannelFromApp() {
+    try {
+        const app = document.querySelector("ytd-app");
+
+        const browseEndpoint =
+            app?.data?.endpoint?.browseEndpoint;
+
+        if (!browseEndpoint) {
+            return null;
+        }
+
+        const { browseId, canonicalBaseUrl } = browseEndpoint;
+
+        if (!browseId || !canonicalBaseUrl) {
+            return null;
+        }
+
+        const metadata = app?.data?.response?.metadata;
+
+        if(!metadata) {
+            return null;
+        }
+
+        const channelName = metadata.channelMetadataRenderer?.title;
+
+        const responseObj = app.data.response;
+
+        const channelImageUrl = findChannelIconFromChannelPage(responseObj);
+
+        return {
+            channelId: browseId,
+            channelName: channelName,
+            channelHandle: canonicalBaseUrl,
+            channelImageUrl: channelImageUrl
+        };
+    } catch {
+        return null;
+    }
+}
+
+// const channel = getCurrentChannelFromApp();
+
+// console.log("Channel ID:", channel?.channelId);
+// console.log("Handle:", channel?.channelHandle);
+
+
+
+
+// async function waitForCurrentChannel(callback) {
+//     let handle = await waitForYouTubeHandle();
+
+//     handle = `/${handle}`;
+
+//     console.log("Handle:", handle);
+
+//     let attempts = 0;
+//     const maxAttempts = 40;
+
+//     const interval = setInterval(() => {
+//         attempts++;
+
+//         const channel = getCurrentChannelFromApp();
+//         if(handle === channel?.channelHandle) {
+//             if (channel?.channelId) {
+//                 clearInterval(interval);
+//                 callback(channel);
+//                 return;
+//             }
+//         }
+
+//         if (attempts >= maxAttempts) {
+//             clearInterval(interval);
+//             callback(null);
+//         }
+//     }, 250);
+// }
+
+async function waitForCurrentChannel() {
+    let handle = await waitForYouTubeHandle();
+
+    handle = `/${handle}`;
+
+    console.log("Handle:", handle);
+
+    let attempts = 0;
+    const maxAttempts = 40;
+
+    return new Promise((resolve) => {
+        const interval = setInterval(() => {
+            attempts++;
+
+            const channel = getCurrentChannelFromApp();
+
+            if (handle === channel?.channelHandle) {
+                if (channel?.channelId) {
+                    clearInterval(interval);
+                    resolve(channel);
+                    return;
+                }
+            }
+
+            if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                reject(new Error("Could not detect current channel from ytd-app"));
+            }
+        }, 250);
+    });
+}
+
+
+
+
+
+
+
+function findChannelIconFromChannelPage(obj) {
+    if (!obj || typeof obj !== "object") {
+        return null;
+    }
+
+    if (obj.pageHeaderRenderer) {
+        const channelIconImageLink =
+            obj.pageHeaderRenderer
+                ?.content
+                ?.pageHeaderViewModel
+                ?.image
+                ?.decoratedAvatarViewModel
+                ?.avatar
+                ?.avatarViewModel
+                ?.image
+                ?.sources?.[0]
+                ?.url;
+
+        return channelIconImageLink || null;
+    }
+
+    for (const value of Object.values(obj)) {
+        const result = findChannelIconFromChannelPage(value);
+
+        if (result) {
+            return result;
+        }
+    }
+
+    return null;
+}
+
+
+
 
 
