@@ -34,23 +34,21 @@ function detectChannelInfoFromChannelPage() {
         'ytd-video-description-infocards-section-renderer ytd-button-renderer yt-button-shape a[href^="/channel/"][href$="/about"]'
     );
 
-    console.log(channelIdLink);
-
     const href = channelIdLink?.getAttribute("href");
 
     const channelId = href
         ?.match(/^\/channel\/([^/?]+)/)?.[1];
 
-    // const channelName = document
-    //     .querySelector('yt-page-header-view-model #page-header-container h1')
-    //     ?.textContent
-    //     .trim();
+    const channelNameElement = document.querySelector('tp-yt-app-header yt-page-header-renderer .ytPageHeaderViewModelTitle span');
+    const channelName = channelNameElement?.textContent?.trim() || null;
 
-    // console.log(channelIdLink);
-    // console.log(channelId);
+    const channelIconElement = document.querySelector('tp-yt-app-header yt-page-header-renderer .ytPageHeaderViewModelHeadlineImage img');
+    const channelIcon = channelIconElement?.getAttribute('src') || null;
 
     return {
         channelId,
+        channelName,
+        channelIcon
     };
 }
 
@@ -123,8 +121,6 @@ function waitForChannelInfo() {
 async function waitForChannelInfoOnChannelPage() {
     const handle = `/${await waitForYouTubeHandle()}`;
 
-    console.log("Handle:", handle);
-
     return new Promise((resolve, reject) => {
         let timeout;
 
@@ -135,12 +131,25 @@ async function waitForChannelInfoOnChannelPage() {
 
             const domHandle = link?.getAttribute('href');
 
-            console.log(handle, domHandle);
+            const appHeaderElement = document.querySelector(
+                'tp-yt-app-header yt-page-header-renderer yt-content-metadata-view-model .ytAttributedStringHost span'
+            );
 
-            if (domHandle === handle) {
+            const handleText = appHeaderElement?.textContent?.trim();
+
+            const handleFromAppHeader =
+                handleText?.startsWith('@')
+                    ? `/${handleText}`
+                    : null;
+
+            if (domHandle === handle && handleFromAppHeader === handle) {
                 const channelInfo = detectChannelInfoFromChannelPage();
 
-                if (channelInfo?.channelId) {
+                if (
+                    channelInfo?.channelId &&
+                    channelInfo?.channelName &&
+                    channelInfo?.channelIcon
+                ) {
                     resolve(channelInfo);
                     return true;
                 }
@@ -165,7 +174,7 @@ async function waitForChannelInfoOnChannelPage() {
             childList: true,
             subtree: true,
             attributes: true,
-            attributeFilter: ['href']
+            attributeFilter: ['href', 'src']
         });
 
         timeout = setTimeout(() => {
