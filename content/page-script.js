@@ -295,6 +295,10 @@ function waitForChannelInfoFromWatchPageDOM() {
 async function waitForChannelInfoFromAppData() {
     let handle = await waitForYouTubeHandle();
 
+    if (!handle) {
+        throw new Error("Could not detect YouTube handle");
+    }
+
     handle = `/${handle}`;
 
     console.log("Handle:", handle);
@@ -306,14 +310,21 @@ async function waitForChannelInfoFromAppData() {
         const interval = setInterval(() => {
             attempts++;
 
-            const channel = extractChannelInfoFromAppData();
+            const channelInfo = extractChannelInfoFromAppData();
 
-            if (handle === channel?.channelHandle) {
-                if (channel?.channelId) {
-                    clearInterval(interval);
-                    resolve(channel);
-                    return;
-                }
+            if (handle === channelInfo?.channelHandle && channelInfo?.channelId) {
+                clearInterval(interval);
+
+                window.postMessage({
+                    type: "CHANNEL_INFO",
+                    channelInfo: {
+                        ...channelInfo,
+                        channelDetectionStatus: "Channel Detected"
+                    }
+                }, "*");
+
+                resolve(channelInfo);
+                return;
             }
 
             if (attempts >= maxAttempts) {
@@ -353,13 +364,13 @@ function extractChannelInfoFromAppData() {
 
         const responseObj = app.data.response;
 
-        const channelImageUrl = findChannelIconInAppData(responseObj);
+        const channelIcon = findChannelIconInAppData(responseObj);
 
         return {
             channelId: browseId,
             channelName: channelName,
             channelHandle: canonicalBaseUrl,
-            channelImageUrl: channelImageUrl
+            channelIcon: channelIcon
         };
     } catch {
         return null;
@@ -436,7 +447,13 @@ function extractChannelInfoFromChannelPageDOM() {
 
 // Waits for the current channel info to become available in the channel page DOM.
 async function waitForChannelInfoFromChannelPageDOM() {
-    const handle = `/${await waitForYouTubeHandle()}`;
+    const youtubeHandle = await waitForYouTubeHandle();
+
+    if(!youtubeHandle) {
+        throw new Error("Could not detect YouTube handle");
+    }
+
+    const handle = `/${youtubeHandle}`;
 
     return new Promise((resolve, reject) => {
         let timeout;
@@ -467,6 +484,14 @@ async function waitForChannelInfoFromChannelPageDOM() {
                     channelInfo?.channelName &&
                     channelInfo?.channelIcon
                 ) {
+                    window.postMessage({
+                        type: "CHANNEL_INFO",
+                        channelInfo: {
+                            ...channelInfo,
+                            channelDetectionStatus: "Channel Detected"
+                        }
+                    }, "*");
+
                     resolve(channelInfo);
                     return true;
                 }
