@@ -199,6 +199,7 @@ window.addEventListener("message", (event) => {
 
     console.log("Channel ID:", channelInfo.channelId);
     console.log("Channel Name:", channelInfo.channelName);
+    console.log("channel Handle:", channelInfo.channelHandle);
     console.log("Channel Icon:", channelInfo.channelIcon);
     console.log(
         "Channel Detection Status:",
@@ -209,6 +210,43 @@ window.addEventListener("message", (event) => {
         type: "CHANNEL_INFO",
         channelInfo
     });
+});
+
+
+
+
+
+
+
+async function sendAllowlistedChannelsToPage() {
+    const { allowlistedChannels = [] } =
+        await chrome.storage.sync.get("allowlistedChannels");
+
+    window.postMessage({
+        type: "ALLOWLIST_UPDATED",
+        allowlistedChannels
+    }, "*");
+}
+sendAllowlistedChannelsToPage();
+
+
+
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== "sync") return;
+
+    if (!changes.allowlistedChannels) return;
+
+    const allowlistedChannels =
+        changes.allowlistedChannels.newValue || [];
+
+    window.postMessage(
+        {
+            type: "ALLOWLIST_UPDATED",
+            allowlistedChannels
+        },
+        "*"
+    );
 });
 
 
@@ -236,3 +274,18 @@ window.addEventListener("message", (event) => {
 //         channelInfo
 //     });
 // });
+
+
+
+
+
+
+window.addEventListener("message", (event) => {
+    if (event.source !== window) {
+        return;
+    }
+
+    if (event.data?.type === "START_INFINITE_SCROLLING") {
+        startInfiniteScrollingObserver(event.data.isDisable);
+    }
+});
