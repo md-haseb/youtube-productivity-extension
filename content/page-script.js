@@ -578,40 +578,85 @@ window.addEventListener("message", (event) => {
 
 
 
+// function waitForInitialFeed(callback) {
+//   let lastCount = 0;
+//   let stableSince = null;
+
+//   const checkFeed = () => {
+//     const items = document.querySelectorAll(
+//       "ytd-rich-item-renderer, ytd-rich-section-renderer"
+//     );
+
+//     const currentCount = items.length;
+
+//     if (currentCount === 0) {
+//       requestAnimationFrame(checkFeed);
+//       return;
+//     }
+
+//     if (currentCount !== lastCount) {
+//       lastCount = currentCount;
+//       stableSince = Date.now();
+//     }
+
+//     // YouTube does not expose a reliable signal indicating that the
+//     // initial feed has finished loading, so use a 2-second stability
+//     // period as a practical Version1 trade-off.
+//     if (Date.now() - stableSince >= 2000) {
+//       callback(items);
+//       return;
+//     }
+
+//     requestAnimationFrame(checkFeed);
+//   };
+
+//   checkFeed();
+// }
+
+
 function waitForInitialFeed(callback) {
-  let lastCount = 0;
-  let stableSince = null;
+    let lastCount = 0;
+    let stableSince = null;
 
-  const checkFeed = () => {
-    const items = document.querySelectorAll(
-      "ytd-rich-item-renderer, ytd-rich-section-renderer"
-    );
+    const checkFeed = () => {
+        const videoItems = document.querySelectorAll(
+            "ytd-rich-item-renderer"
+        );
 
-    const currentCount = items.length;
+        const sections = document.querySelectorAll(
+            "ytd-rich-section-renderer"
+        );
 
-    if (currentCount === 0) {
-      requestAnimationFrame(checkFeed);
-      return;
-    }
+        const currentCount = videoItems.length + sections.length;
 
-    if (currentCount !== lastCount) {
-      lastCount = currentCount;
-      stableSince = Date.now();
-    }
+        if (currentCount === 0) {
+            requestAnimationFrame(checkFeed);
+            return;
+        }
 
-    // YouTube does not expose a reliable signal indicating that the
-    // initial feed has finished loading, so use a 2-second stability
-    // period as a practical Version1 trade-off.
-    if (Date.now() - stableSince >= 2000) {
-      callback(items);
-      return;
-    }
+        if (currentCount !== lastCount) {
+            lastCount = currentCount;
+            stableSince = Date.now();
+        }
 
-    requestAnimationFrame(checkFeed);
-  };
+        // YouTube does not expose a reliable signal indicating that the
+        // initial feed has finished loading, so use a 2-second stability
+        // period as a practical Version1 trade-off.
+        if (Date.now() - stableSince >= 2000) {
+            callback({
+                videoItems,
+                sections
+            });
+            return;
+        }
 
-  checkFeed();
+        requestAnimationFrame(checkFeed);
+    };
+
+    checkFeed();
 }
+
+
 
 
 
@@ -735,9 +780,21 @@ function waitForInitialFeed(callback) {
 //         isDisable: true
 //     }, "*");
 // }
-function filterInitialFeed(allowlistedChannelHandles) {
-    waitForInitialFeed((initialFeed) => {
-        initialFeed.forEach(elm => {
+
+
+
+function filterInitialFeed() {
+    waitForInitialFeed(({ videoItems, sections }) => {
+        window.postMessage({
+            type: "START_INFINITE_SCROLLING",
+            isDisable: true
+        }, "*");
+
+        sections.forEach(section => {
+            section.style.display = 'none';
+        });
+
+        videoItems.forEach(elm => {
             const link = elm.querySelector(
                 '#content yt-lockup-view-model .ytLockupViewModelMetadata .ytLockupMetadataViewModelTextContainer .ytContentMetadataViewModelHost .ytAttributedStringHost a.ytAttributedStringLink'
             );
@@ -752,19 +809,17 @@ function filterInitialFeed(allowlistedChannelHandles) {
 
             console.log(allowlistedChannelHandles, href);
             if (allowlistedChannelHandles.has(href)) {
+                console.log('hello1');
                 elm.style.display = '';
             } else {
+                console.log('hello2');
                 elm.style.display = 'none';
             }
         });
 
-        window.postMessage({
-            type: "START_INFINITE_SCROLLING",
-            isDisable: true
-        }, "*");
     });
 }
-filterInitialFeed(allowlistedChannelHandles);
+filterInitialFeed();
 // function filterInitialFeed(allowlistedHandles) {
 //     waitForInitialFeed((initialFeed) => {
 //         initialFeed.forEach(elm => {

@@ -262,6 +262,7 @@ allowlistActionButton.addEventListener('click', () => {
         {
             channelId: currentChannelInfo.channelId,
             channelName: currentChannelInfo.channelName,
+            channelHandle: currentChannelInfo.channelHandle,
             channelIcon: currentChannelInfo.channelIcon
         },
         (added) => {
