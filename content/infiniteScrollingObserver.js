@@ -51,32 +51,60 @@ function waitForInitialFeed(callback) {
  * @param {boolean} isDisable - Whether infinite scrolling should be disabled.
  */
 
+// function startInfiniteScrollingObserver(isDisable) {
+//   waitForInitialFeed((initialFeed) => {
+//     const initialItems = new Set(initialFeed);
+
+//     toggleContinuation(isDisable);
+
+//     const observer = new MutationObserver(() => {
+
+//       toggleContinuation(isDisable);
+
+//       const currentItems = document.querySelectorAll(
+//         "ytd-rich-item-renderer, ytd-rich-section-renderer"
+//       );
+
+//       currentItems.forEach((item) => {
+//         if (initialItems.has(item)) return;
+
+//         toggleVisibility(item, isDisable);
+//       });
+//     });
+
+//     observer.observe(document.body, {
+//       childList: true,
+//       subtree: true,
+//     });
+//   });
+// }
 function startInfiniteScrollingObserver(isDisable) {
-  waitForInitialFeed((initialFeed) => {
-    const initialItems = new Set(initialFeed);
+    waitForInitialFeed((initialFeed) => {
+        const initialItems = new Set(initialFeed);
 
-    toggleContinuation(isDisable);
+        toggleContinuation(isDisable);
 
-    const observer = new MutationObserver(() => {
+        const observer = new MutationObserver(() => {
+            toggleContinuation(isDisable);
 
-      toggleContinuation(isDisable);
+            const currentItems = [
+                ...document.querySelectorAll("ytd-rich-item-renderer")
+            ].filter(
+                item => !item.closest("ytd-rich-section-renderer")
+            );
 
-      const currentItems = document.querySelectorAll(
-        "ytd-rich-item-renderer, ytd-rich-section-renderer"
-      );
+            currentItems.forEach((item) => {
+                if (initialItems.has(item)) return;
 
-      currentItems.forEach((item) => {
-        if (initialItems.has(item)) return;
+                toggleVisibility(item, isDisable);
+            });
+        });
 
-        toggleVisibility(item, isDisable);
-      });
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+        });
     });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-  });
 }
 
 

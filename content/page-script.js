@@ -614,23 +614,64 @@ window.addEventListener("message", (event) => {
 // }
 
 
-function waitForInitialFeed(callback) {
+// function waitForInitialFeed(callback) {
+//     let lastCount = 0;
+//     let stableSince = null;
+
+//     const checkFeed = () => {
+//         // const videoItems = document.querySelectorAll(
+//         //     "ytd-rich-item-renderer"
+//         // );
+//         const videoItems = [
+//             ...document.querySelectorAll("ytd-rich-item-renderer")
+//         ].filter(
+//             item => !item.closest("ytd-rich-section-renderer")
+//         );
+
+//         // const sections = document.querySelectorAll(
+//         //     "ytd-rich-section-renderer"
+//         // );
+
+//         const currentCount = videoItems.length;
+
+//         if (currentCount === 0) {
+//             requestAnimationFrame(checkFeed);
+//             return;
+//         }
+
+//         if (currentCount !== lastCount) {
+//             lastCount = currentCount;
+//             stableSince = Date.now();
+//         }
+
+//         // YouTube does not expose a reliable signal indicating that the
+//         // initial feed has finished loading, so use a 2-second stability
+//         // period as a practical Version1 trade-off.
+//         if (Date.now() - stableSince >= 2000) {
+//             // callback({
+//             //     videoItems,
+//             //     sections
+//             // });
+//             callback(videoItems);
+//             return;
+//         }
+
+//         requestAnimationFrame(checkFeed);
+//     };
+
+//     checkFeed();
+// }
+
+function waitForInitialElements(getElements, callback) {
     let lastCount = 0;
     let stableSince = null;
 
-    const checkFeed = () => {
-        const videoItems = document.querySelectorAll(
-            "ytd-rich-item-renderer"
-        );
-
-        const sections = document.querySelectorAll(
-            "ytd-rich-section-renderer"
-        );
-
-        const currentCount = videoItems.length + sections.length;
+    const check = () => {
+        const elements = getElements();
+        const currentCount = elements.length;
 
         if (currentCount === 0) {
-            requestAnimationFrame(checkFeed);
+            requestAnimationFrame(check);
             return;
         }
 
@@ -639,23 +680,17 @@ function waitForInitialFeed(callback) {
             stableSince = Date.now();
         }
 
-        // YouTube does not expose a reliable signal indicating that the
-        // initial feed has finished loading, so use a 2-second stability
-        // period as a practical Version1 trade-off.
         if (Date.now() - stableSince >= 2000) {
-            callback({
-                videoItems,
-                sections
-            });
+            console.log(currentCount);
+            callback(elements);
             return;
         }
 
-        requestAnimationFrame(checkFeed);
+        requestAnimationFrame(check);
     };
 
-    checkFeed();
+    check();
 }
-
 
 
 
@@ -780,46 +815,219 @@ function waitForInitialFeed(callback) {
 //         isDisable: true
 //     }, "*");
 // }
-
-
-
 function filterInitialFeed() {
-    waitForInitialFeed(({ videoItems, sections }) => {
-        window.postMessage({
-            type: "START_INFINITE_SCROLLING",
-            isDisable: true
-        }, "*");
+    waitForInitialElements(
+        () =>
+            [...document.querySelectorAll("ytd-rich-item-renderer")]
+                .filter(item =>
+                    !item.closest("ytd-rich-section-renderer")
+                ),
+        (videoItems) => {
+            console.log("Initial videos:", videoItems.length);
 
-        sections.forEach(section => {
-            section.style.display = 'none';
-        });
+            window.postMessage({
+                type: "START_INFINITE_SCROLLING",
+                isDisable: true
+            }, "*");
 
-        videoItems.forEach(elm => {
-            const link = elm.querySelector(
-                '#content yt-lockup-view-model .ytLockupViewModelMetadata .ytLockupMetadataViewModelTextContainer .ytContentMetadataViewModelHost .ytAttributedStringHost a.ytAttributedStringLink'
-            );
+            videoItems.forEach(filterVideoItem);
+        }
+    );
 
-            if(!link) {
-                console.log('NO LINK:', elm);
-                elm.style.display = 'none';
-                return;
-            }
+    waitForInitialElements(
+        () => [
+            ...document.querySelectorAll("ytd-rich-section-renderer")
+        ],
+        (sections) => {
+            console.log("Initial sections:", sections.length);
 
-            const href = link.getAttribute('href');
+            sections.forEach(filterSection);
+        }
+    );
 
-            console.log(allowlistedChannelHandles, href);
-            if (allowlistedChannelHandles.has(href)) {
-                console.log('hello1');
-                elm.style.display = '';
-            } else {
-                console.log('hello2');
-                elm.style.display = 'none';
-            }
-        });
-
-    });
+    startFeedObserver();
 }
 filterInitialFeed();
+
+function startFeedObserver() {
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType !== Node.ELEMENT_NODE) continue;
+
+                if (node.matches("ytd-rich-section-renderer")) {
+                    filterSection(node);
+                    continue;
+                }
+
+                if (node.matches("ytd-rich-item-renderer")) {
+                    if (node.closest("ytd-rich-section-renderer")) {
+                        continue;
+                    }
+
+                    filterVideoItem(node);
+                }
+            }
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+}
+
+const waitingForChannel = new WeakSet();
+
+function waitForVideoChannel(elm) {
+    if (waitingForChannel.has(elm)) {
+        return;
+    }
+
+    const findChannelLink = () =>
+        elm.querySelector(
+            '#content yt-lockup-view-model .ytLockupViewModelMetadata .ytLockupMetadataViewModelTextContainer .ytContentMetadataViewModelHost .ytAttributedStringHost a.ytAttributedStringLink'
+        );
+
+    const existingLink = findChannelLink();
+
+    if (existingLink) {
+        filterVideoItem(elm);
+        return;
+    }
+
+    waitingForChannel.add(elm);
+
+    const observer = new MutationObserver(() => {
+        const link = findChannelLink();
+
+        if (!link) return;
+
+        observer.disconnect();
+        waitingForChannel.delete(elm);
+
+        filterVideoItem(elm);
+    });
+
+    observer.observe(elm, {
+        childList: true,
+        subtree: true
+    });
+}
+
+function filterVideoItem(elm) {
+    const link = elm.querySelector(
+        '#content yt-lockup-view-model .ytLockupViewModelMetadata .ytLockupMetadataViewModelTextContainer .ytContentMetadataViewModelHost .ytAttributedStringHost a.ytAttributedStringLink'
+    );
+
+    // if (!link) {
+    //     console.log("NO LINK:", elm);
+    //     elm.style.display = "none";
+    //     return;
+    // }
+    // if (!link) {
+    //     console.log("NO LINK:", elm);
+    //     console.log("TAG:", elm.tagName);
+    //     console.log("CLASS:", elm.className);
+
+    //     elm.style.display = "none";
+
+    //     console.log("DISPLAY AFTER:", getComputedStyle(elm).display);
+
+    //     return;
+    // }
+    // if (!link) {
+    //     console.log("NO LINK:", elm);
+
+    //     elm.style.display = "none";
+
+    //     console.log(
+    //         "DISPLAY AFTER:",
+    //         getComputedStyle(elm).display
+    //     );
+
+    //     setTimeout(() => {
+    //         console.log(
+    //             "LATER DISPLAY:",
+    //             getComputedStyle(elm).display
+    //         );
+    //     }, 1000);
+
+    //     return;
+    // }
+    if (!link) {
+        elm.style.display = "none";
+        waitForVideoChannel(elm);
+        return;
+    }
+
+    const href = link.getAttribute("href");
+
+    if (allowlistedChannelHandles.has(href)) {
+        console.log(allowlistedChannelHandles, href);
+        elm.style.display = "";
+    } else {
+        elm.style.display = "none";
+    }
+}
+
+function filterSection(section) {
+    // section filtering logic
+    section.style.display = "none";
+}
+// function filterInitialFeed() {
+//     waitForInitialElements(
+//         () =>
+//             [...document.querySelectorAll("ytd-rich-item-renderer")]
+//                 .filter(item => !item.closest("ytd-rich-section-renderer")),
+//         (videoItems) => {
+//         console.log(videoItems.length);
+//         window.postMessage({
+//             type: "START_INFINITE_SCROLLING",
+//             isDisable: true
+//         }, "*");
+//         console.log(videoItems.length);
+//         // sections.forEach(section => {
+//         //     section.style.display = 'none';
+//         // });
+
+//         videoItems.forEach(elm => {
+//             const link = elm.querySelector(
+//                 '#content yt-lockup-view-model .ytLockupViewModelMetadata .ytLockupMetadataViewModelTextContainer .ytContentMetadataViewModelHost .ytAttributedStringHost a.ytAttributedStringLink'
+//             );
+
+//             if(!link) {
+//                 console.log('NO LINK:', elm);
+//                 elm.style.display = 'none';
+//                 return;
+//             }
+
+//             const href = link.getAttribute('href');
+
+//             console.log(allowlistedChannelHandles, href);
+//             if (allowlistedChannelHandles.has(href)) {
+//                 console.log('hello1');
+//                 elm.style.display = '';
+//             } else {
+//                 console.log('hello2');
+//                 elm.style.display = 'none';
+//             }
+//         });
+
+//     });
+//     // waitForInitialElements(
+//     //     () => [...document.querySelectorAll("ytd-rich-section-renderer")],
+//     //     sections => {
+//     //         // process sections
+//     //         console.log(sections);
+//     //         sections.forEach(section => {
+//     //             console.log('hello3');
+//     //             section.style.display = 'none';
+//     //         });
+//     //     }
+//     // );
+// }
+// filterInitialFeed();
 // function filterInitialFeed(allowlistedHandles) {
 //     waitForInitialFeed((initialFeed) => {
 //         initialFeed.forEach(elm => {
