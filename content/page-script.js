@@ -815,7 +815,48 @@ function waitForInitialElements(getElements, callback) {
 //         isDisable: true
 //     }, "*");
 // }
+// function filterInitialFeed() {
+//     waitForInitialElements(
+//         () =>
+//             [...document.querySelectorAll("ytd-rich-item-renderer")]
+//                 .filter(item =>
+//                     !item.closest("ytd-rich-section-renderer")
+//                 ),
+//         (videoItems) => {
+//             console.log("Initial videos:", videoItems.length);
+
+//             window.postMessage({
+//                 type: "START_INFINITE_SCROLLING",
+//                 isDisable: true
+//             }, "*");
+
+//             videoItems.forEach(filterVideoItem);
+//         }
+//     );
+
+//     waitForInitialElements(
+//         () => [
+//             ...document.querySelectorAll("ytd-rich-section-renderer")
+//         ],
+//         (sections) => {
+//             console.log("Initial sections:", sections.length);
+
+//             sections.forEach(filterSection);
+//         }
+//     );
+
+//     startFeedObserver();
+// }
 function filterInitialFeed() {
+    let videosReady = false;
+    let sectionsReady = false;
+
+    const startObserverIfReady = () => {
+        if (videosReady && sectionsReady) {
+            startFeedObserver();
+        }
+    };
+
     waitForInitialElements(
         () =>
             [...document.querySelectorAll("ytd-rich-item-renderer")]
@@ -831,6 +872,9 @@ function filterInitialFeed() {
             }, "*");
 
             videoItems.forEach(filterVideoItem);
+
+            videosReady = true;
+            startObserverIfReady();
         }
     );
 
@@ -842,10 +886,11 @@ function filterInitialFeed() {
             console.log("Initial sections:", sections.length);
 
             sections.forEach(filterSection);
+
+            sectionsReady = true;
+            startObserverIfReady();
         }
     );
-
-    startFeedObserver();
 }
 filterInitialFeed();
 
@@ -875,6 +920,15 @@ function startFeedObserver() {
         childList: true,
         subtree: true
     });
+
+    // Catch anything that appeared before observer started.
+    document
+        .querySelectorAll("ytd-rich-item-renderer")
+        .forEach(video => {
+            if (!video.closest("ytd-rich-section-renderer")) {
+                filterVideoItem(video);
+            }
+        });
 }
 
 const waitingForChannel = new WeakSet();
@@ -957,18 +1011,34 @@ function filterVideoItem(elm) {
     // }
     if (!link) {
         elm.style.display = "none";
+        console.log('hello');
         waitForVideoChannel(elm);
         return;
     }
 
     const href = link.getAttribute("href");
+    const allowed = allowlistedChannelHandles.has(href);
 
-    if (allowlistedChannelHandles.has(href)) {
-        console.log(allowlistedChannelHandles, href);
+    if (allowed) {
         elm.style.display = "";
     } else {
         elm.style.display = "none";
     }
+
+    console.log({
+        href,
+        allowed,
+        display: elm.style.display,
+        element: elm
+    });
+
+    // if (allowlistedChannelHandles.has(href)) {
+    //     console.log(allowlistedChannelHandles, href);
+    //     elm.style.display = "";
+    // } else {
+    //     // console.log('hello Hide');
+    //     elm.style.display = "none";
+    // }
 }
 
 function filterSection(section) {
