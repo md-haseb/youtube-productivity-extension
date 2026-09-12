@@ -548,7 +548,8 @@ async function waitForChannelInfoFromChannelPageDOM() {
 
 
 
-
+// Listen for allowlist updates and store channel handles in a Set
+// for efficient channel matching and filtering.
 let allowlistedChannelHandles = new Set();
 
 window.addEventListener("message", (event) => {
@@ -847,6 +848,10 @@ function waitForInitialElements(getElements, callback) {
 
 //     startFeedObserver();
 // }
+
+// Process the initial homepage feed by filtering videos and sections,
+// then start observing the feed for dynamically added content.
+
 function filterInitialFeed() {
     let videosReady = false;
     let sectionsReady = false;
@@ -871,7 +876,11 @@ function filterInitialFeed() {
                 isDisable: true
             }, "*");
 
-            videoItems.forEach(filterVideoItem);
+            // videoItems.forEach(filterVideoItem);
+            videoItems.forEach(video => {
+                observeVideoItem(video);
+                filterVideoItem(video);
+            });
 
             videosReady = true;
             startObserverIfReady();
@@ -894,7 +903,11 @@ function filterInitialFeed() {
 }
 filterInitialFeed();
 
+
+// Observe the homepage for dynamically added feed content and apply
+// the appropriate filtering logic to new videos and sections.
 function startFeedObserver() {
+    console.log('from observer');
     const observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
             for (const node of mutation.addedNodes) {
@@ -912,6 +925,7 @@ function startFeedObserver() {
 
                     filterVideoItem(node);
                 }
+
             }
         }
     });
@@ -931,6 +945,9 @@ function startFeedObserver() {
         });
 }
 
+
+// Wait for the channel link to become available before filtering the video,
+// since YouTube may render the video content before its metadata.
 const waitingForChannel = new WeakSet();
 
 function waitForVideoChannel(elm) {
@@ -969,48 +986,17 @@ function waitForVideoChannel(elm) {
     });
 }
 
+
+// Show or hide a video based on whether its channel is allowlisted.
+// Wait for the channel link if YouTube has not rendered it yet.
 function filterVideoItem(elm) {
     const link = elm.querySelector(
         '#content yt-lockup-view-model .ytLockupViewModelMetadata .ytLockupMetadataViewModelTextContainer .ytContentMetadataViewModelHost .ytAttributedStringHost a.ytAttributedStringLink'
     );
 
-    // if (!link) {
-    //     console.log("NO LINK:", elm);
-    //     elm.style.display = "none";
-    //     return;
-    // }
-    // if (!link) {
-    //     console.log("NO LINK:", elm);
-    //     console.log("TAG:", elm.tagName);
-    //     console.log("CLASS:", elm.className);
-
-    //     elm.style.display = "none";
-
-    //     console.log("DISPLAY AFTER:", getComputedStyle(elm).display);
-
-    //     return;
-    // }
-    // if (!link) {
-    //     console.log("NO LINK:", elm);
-
-    //     elm.style.display = "none";
-
-    //     console.log(
-    //         "DISPLAY AFTER:",
-    //         getComputedStyle(elm).display
-    //     );
-
-    //     setTimeout(() => {
-    //         console.log(
-    //             "LATER DISPLAY:",
-    //             getComputedStyle(elm).display
-    //         );
-    //     }, 1000);
-
-    //     return;
-    // }
     if (!link) {
-        elm.style.display = "none";
+        // elm.style.display = "none";
+        // observeVideoVisibility(elm);
         console.log('hello');
         waitForVideoChannel(elm);
         return;
@@ -1023,6 +1009,16 @@ function filterVideoItem(elm) {
         elm.style.display = "";
     } else {
         elm.style.display = "none";
+        observeVideoVisibility(elm);
+
+        setTimeout(() => {
+            console.log(
+                "1 second later:",
+                elm.style.display,
+                getComputedStyle(elm).display,
+                elm
+            );
+        }, 1000);
     }
 
     console.log({
@@ -1031,19 +1027,55 @@ function filterVideoItem(elm) {
         display: elm.style.display,
         element: elm
     });
-
-    // if (allowlistedChannelHandles.has(href)) {
-    //     console.log(allowlistedChannelHandles, href);
-    //     elm.style.display = "";
-    // } else {
-    //     // console.log('hello Hide');
-    //     elm.style.display = "none";
-    // }
 }
 
+
+const observingVisibility = new WeakSet();
+
+function observeVideoVisibility(elm) {
+    if (observingVisibility.has(elm)) {
+        return;
+    }
+
+    observingVisibility.add(elm);
+
+    const observer = new MutationObserver(() => {
+        if (elm.style.display !== "none") {
+            elm.style.display = "none";
+        }
+    });
+
+    observer.observe(elm, {
+        attributes: true,
+        attributeFilter: ["style"]
+    });
+}
+
+
+// Hide the homepage section from the feed.
 function filterSection(section) {
     // section filtering logic
     section.style.display = "none";
+}
+
+
+const observedVideoItems = new WeakSet();
+
+function observeVideoItem(elm) {
+    if (observedVideoItems.has(elm)) {
+        return;
+    }
+
+    observedVideoItems.add(elm);
+
+    const observer = new MutationObserver(() => {
+        filterVideoItem(elm);
+    });
+
+    observer.observe(elm, {
+        childList: true,
+        subtree: true
+    });
 }
 // function filterInitialFeed() {
 //     waitForInitialElements(
@@ -1244,819 +1276,72 @@ function filterSection(section) {
 
 
 
-function findVideoInfoFromMetadata(metadata) {
-    let browseEndpoint = null;
-    let watchEndpoint = null;
+// function findVideoInfoFromMetadata(metadata) {
+//     let browseEndpoint = null;
+//     let watchEndpoint = null;
 
-    function search(obj) {
-        if (!obj || typeof obj !== "object") {
-            return;
-        }
+//     function search(obj) {
+//         if (!obj || typeof obj !== "object") {
+//             return;
+//         }
 
-        if (!browseEndpoint && obj.browseEndpoint?.browseId && obj.browseEndpoint?.canonicalBaseUrl) {
-            browseEndpoint = obj.browseEndpoint;
-        }
+//         if (!browseEndpoint && obj.browseEndpoint?.browseId && obj.browseEndpoint?.canonicalBaseUrl) {
+//             browseEndpoint = obj.browseEndpoint;
+//         }
 
-        if (!watchEndpoint && obj.watchEndpoint?.videoId) {
-            watchEndpoint = obj.watchEndpoint;
-        }
+//         if (!watchEndpoint && obj.watchEndpoint?.videoId) {
+//             watchEndpoint = obj.watchEndpoint;
+//         }
 
-        if (browseEndpoint && watchEndpoint) {
-            return;
-        }
+//         if (browseEndpoint && watchEndpoint) {
+//             return;
+//         }
 
-        for (const value of Object.values(obj)) {
-            search(value);
+//         for (const value of Object.values(obj)) {
+//             search(value);
 
-            if (browseEndpoint && watchEndpoint) {
-                return;
-            }
-        }
-    }
+//             if (browseEndpoint && watchEndpoint) {
+//                 return;
+//             }
+//         }
+//     }
 
-    search(metadata);
+//     search(metadata);
 
-    if (!browseEndpoint || !watchEndpoint) {
-        return null;
-    }
+//     if (!browseEndpoint || !watchEndpoint) {
+//         return null;
+//     }
 
-    return {
-        browseId: browseEndpoint.browseId,
-        channelHandle: browseEndpoint.canonicalBaseUrl,
-        videoId: watchEndpoint.videoId
-    };
-}
+//     return {
+//         browseId: browseEndpoint.browseId,
+//         channelHandle: browseEndpoint.canonicalBaseUrl,
+//         videoId: watchEndpoint.videoId
+//     };
+// }
 
 
 
-function findVideoInfos(obj, videoInfos = []) {
-    if (!obj || typeof obj !== "object") {
-        return videoInfos;
-    }
+// function findVideoInfos(obj, videoInfos = []) {
+//     if (!obj || typeof obj !== "object") {
+//         return videoInfos;
+//     }
 
-    if (obj.metadata) {
-        const videoInfo = findVideoInfoFromMetadata(obj.metadata);
+//     if (obj.metadata) {
+//         const videoInfo = findVideoInfoFromMetadata(obj.metadata);
 
-        if (videoInfo) {
-            videoInfos.push(videoInfo);
-        }
-    }
+//         if (videoInfo) {
+//             videoInfos.push(videoInfo);
+//         }
+//     }
 
-    for (const value of Object.values(obj)) {
-        findVideoInfos(value, videoInfos);
-    }
+//     for (const value of Object.values(obj)) {
+//         findVideoInfos(value, videoInfos);
+//     }
 
-    return videoInfos;
-}
+//     return videoInfos;
+// }
 
 // const videoInfos = findVideoInfos(app.data.response);
 
 // console.log(videoInfos);
-
-
-
-// "metadata": {
-//                                                         "lockupMetadataViewModel": {
-//                                                             "title": {
-//                                                                 "content": "অ্যাপলের প্রধান নির্বাহী কর্মকর্তার পদ থেকে বিদায় নিলেন টিম কুক | Tim Cook | Apple CEO | Somoy TV"
-//                                                             },
-//                                                             "image": {
-//                                                                 "decoratedAvatarViewModel": {
-//                                                                     "avatar": {
-//                                                                         "avatarViewModel": {
-//                                                                             "image": {
-//                                                                                 "sources": [
-//                                                                                     {
-//                                                                                         "url": "https://yt3.ggpht.com/ClEODmtPFKIVyp0D_cWORBGKg-CmoRJCMOigdGgZQCMF-a8uKvXYE3HWHtCO9p32PkgirqBs=s68-c-k-c0x00ffffff-no-rj",
-//                                                                                         "width": 68,
-//                                                                                         "height": 68
-//                                                                                     }
-//                                                                                 ]
-//                                                                             },
-//                                                                             "avatarImageSize": "AVATAR_SIZE_M"
-//                                                                         }
-//                                                                     },
-//                                                                     "a11yLabel": "Go to channel Somoy International",
-//                                                                     "rendererContext": {
-//                                                                         "commandContext": {
-//                                                                             "onTap": {
-//                                                                                 "innertubeCommand": {
-//                                                                                     "clickTrackingParams": "CPEDENwwIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                     "commandMetadata": {
-//                                                                                         "webCommandMetadata": {
-//                                                                                             "url": "/@somoyinternational",
-//                                                                                             "webPageType": "WEB_PAGE_TYPE_CHANNEL",
-//                                                                                             "rootVe": 3611,
-//                                                                                             "apiUrl": "/youtubei/v1/browse"
-//                                                                                         }
-//                                                                                     },
-//                                                                                     "browseEndpoint": {
-//                                                                                         "browseId": "UCIXugjH-g5bFUqLoYRgiSbg",
-//                                                                                         "canonicalBaseUrl": "/@somoyinternational"
-//                                                                                     }
-//                                                                                 }
-//                                                                             }
-//                                                                         }
-//                                                                     }
-//                                                                 }
-//                                                             },
-//                                                             "metadata": {
-//                                                                 "contentMetadataViewModel": {
-//                                                                     "metadataRows": [
-//                                                                         {
-//                                                                             "metadataParts": [
-//                                                                                 {
-//                                                                                     "text": {
-//                                                                                         "content": "Somoy International",
-//                                                                                         "commandRuns": [
-//                                                                                             {
-//                                                                                                 "startIndex": 0,
-//                                                                                                 "length": 19,
-//                                                                                                 "onTap": {
-//                                                                                                     "innertubeCommand": {
-//                                                                                                         "clickTrackingParams": "CPEDENwwIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                         "commandMetadata": {
-//                                                                                                             "webCommandMetadata": {
-//                                                                                                                 "url": "/@somoyinternational",
-//                                                                                                                 "webPageType": "WEB_PAGE_TYPE_CHANNEL",
-//                                                                                                                 "rootVe": 3611,
-//                                                                                                                 "apiUrl": "/youtubei/v1/browse"
-//                                                                                                             }
-//                                                                                                         },
-//                                                                                                         "browseEndpoint": {
-//                                                                                                             "browseId": "UCIXugjH-g5bFUqLoYRgiSbg",
-//                                                                                                             "canonicalBaseUrl": "/@somoyinternational"
-//                                                                                                         }
-//                                                                                                     }
-//                                                                                                 }
-//                                                                                             }
-//                                                                                         ],
-//                                                                                         "styleRuns": [
-//                                                                                             {
-//                                                                                                 "startIndex": 0,
-//                                                                                                 "length": 19,
-//                                                                                                 "weightLabel": "FONT_WEIGHT_NORMAL"
-//                                                                                             },
-//                                                                                             {
-//                                                                                                 "startIndex": 19,
-//                                                                                                 "styleRunExtensions": {
-//                                                                                                     "styleRunColorMapExtension": {
-//                                                                                                         "colorMap": [
-//                                                                                                             {
-//                                                                                                                 "key": "USER_INTERFACE_THEME_DARK",
-//                                                                                                                 "value": 4289374890
-//                                                                                                             },
-//                                                                                                             {
-//                                                                                                                 "key": "USER_INTERFACE_THEME_LIGHT",
-//                                                                                                                 "value": 4284506208
-//                                                                                                             }
-//                                                                                                         ]
-//                                                                                                     }
-//                                                                                                 }
-//                                                                                             }
-//                                                                                         ],
-//                                                                                         "attachmentRuns": [
-//                                                                                             {
-//                                                                                                 "startIndex": 19,
-//                                                                                                 "length": 0,
-//                                                                                                 "element": {
-//                                                                                                     "type": {
-//                                                                                                         "imageType": {
-//                                                                                                             "image": {
-//                                                                                                                 "sources": [
-//                                                                                                                     {
-//                                                                                                                         "clientResource": {
-//                                                                                                                             "imageName": "CHECK_CIRCLE_FILLED"
-//                                                                                                                         },
-//                                                                                                                         "width": 14,
-//                                                                                                                         "height": 14
-//                                                                                                                     }
-//                                                                                                                 ]
-//                                                                                                             }
-//                                                                                                         }
-//                                                                                                     },
-//                                                                                                     "properties": {
-//                                                                                                         "layoutProperties": {
-//                                                                                                             "height": {
-//                                                                                                                 "value": 14,
-//                                                                                                                 "unit": "DIMENSION_UNIT_POINT"
-//                                                                                                             },
-//                                                                                                             "width": {
-//                                                                                                                 "value": 14,
-//                                                                                                                 "unit": "DIMENSION_UNIT_POINT"
-//                                                                                                             },
-//                                                                                                             "margin": {
-//                                                                                                                 "left": {
-//                                                                                                                     "value": 4,
-//                                                                                                                     "unit": "DIMENSION_UNIT_POINT"
-//                                                                                                                 }
-//                                                                                                             }
-//                                                                                                         }
-//                                                                                                     }
-//                                                                                                 },
-//                                                                                                 "alignment": "ALIGNMENT_VERTICAL_CENTER"
-//                                                                                             }
-//                                                                                         ]
-//                                                                                     }
-//                                                                                 }
-//                                                                             ]
-//                                                                         },
-//                                                                         {
-//                                                                             "metadataParts": [
-//                                                                                 {
-//                                                                                     "text": {
-//                                                                                         "content": "6.6K views"
-//                                                                                     }
-//                                                                                 },
-//                                                                                 {
-//                                                                                     "text": {
-//                                                                                         "content": "1 day ago"
-//                                                                                     },
-//                                                                                     "accessibilityLabel": "1 day ago"
-//                                                                                 }
-//                                                                             ]
-//                                                                         }
-//                                                                     ],
-//                                                                     "delimiter": " • "
-//                                                                 }
-//                                                             },
-//                                                             "menuButton": {
-//                                                                 "buttonViewModel": {
-//                                                                     "iconName": "MORE_VERT",
-//                                                                     "onTap": {
-//                                                                         "innertubeCommand": {
-//                                                                             "clickTrackingParams": "CPIDEPBbIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                             "showSheetCommand": {
-//                                                                                 "panelLoadingStrategy": {
-//                                                                                     "inlineContent": {
-//                                                                                         "sheetViewModel": {
-//                                                                                             "content": {
-//                                                                                                 "listViewModel": {
-//                                                                                                     "listItems": [
-//                                                                                                         {
-//                                                                                                             "listItemViewModel": {
-//                                                                                                                 "title": {
-//                                                                                                                     "content": "Add to queue"
-//                                                                                                                 },
-//                                                                                                                 "leadingImage": {
-//                                                                                                                     "sources": [
-//                                                                                                                         {
-//                                                                                                                             "clientResource": {
-//                                                                                                                                 "imageName": "ADD_TO_QUEUE_TAIL"
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     ]
-//                                                                                                                 },
-//                                                                                                                 "rendererContext": {
-//                                                                                                                     "loggingContext": {
-//                                                                                                                         "loggingDirectives": {
-//                                                                                                                             "trackingParams": "CP0DEP6YBBgAIhMIuaCzsK_TlgMVBUE4BR04HAzZ",
-//                                                                                                                             "visibility": {
-//                                                                                                                                 "types": "12"
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     },
-//                                                                                                                     "commandContext": {
-//                                                                                                                         "onTap": {
-//                                                                                                                             "innertubeCommand": {
-//                                                                                                                                 "clickTrackingParams": "CP0DEP6YBBgAIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                 "commandMetadata": {
-//                                                                                                                                     "webCommandMetadata": {
-//                                                                                                                                         "sendPost": true
-//                                                                                                                                     }
-//                                                                                                                                 },
-//                                                                                                                                 "signalServiceEndpoint": {
-//                                                                                                                                     "signal": "CLIENT_SIGNAL",
-//                                                                                                                                     "actions": [
-//                                                                                                                                         {
-//                                                                                                                                             "clickTrackingParams": "CP0DEP6YBBgAIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                             "addToPlaylistCommand": {
-//                                                                                                                                                 "openMiniplayer": true,
-//                                                                                                                                                 "videoId": "eWpHHU8a1OE",
-//                                                                                                                                                 "listType": "PLAYLIST_EDIT_LIST_TYPE_QUEUE",
-//                                                                                                                                                 "onCreateListCommand": {
-//                                                                                                                                                     "clickTrackingParams": "CP0DEP6YBBgAIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                                     "commandMetadata": {
-//                                                                                                                                                         "webCommandMetadata": {
-//                                                                                                                                                             "sendPost": true,
-//                                                                                                                                                             "apiUrl": "/youtubei/v1/playlist/create"
-//                                                                                                                                                         }
-//                                                                                                                                                     },
-//                                                                                                                                                     "createPlaylistServiceEndpoint": {
-//                                                                                                                                                         "videoIds": [
-//                                                                                                                                                             "eWpHHU8a1OE"
-//                                                                                                                                                         ],
-//                                                                                                                                                         "params": "CAQ%3D"
-//                                                                                                                                                     }
-//                                                                                                                                                 },
-//                                                                                                                                                 "videoIds": [
-//                                                                                                                                                     "eWpHHU8a1OE"
-//                                                                                                                                                 ],
-//                                                                                                                                                 "videoCommand": {
-//                                                                                                                                                     "clickTrackingParams": "CP0DEP6YBBgAIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                                     "commandMetadata": {
-//                                                                                                                                                         "webCommandMetadata": {
-//                                                                                                                                                             "url": "/watch?v=eWpHHU8a1OE",
-//                                                                                                                                                             "webPageType": "WEB_PAGE_TYPE_WATCH",
-//                                                                                                                                                             "rootVe": 3832
-//                                                                                                                                                         }
-//                                                                                                                                                     },
-//                                                                                                                                                     "watchEndpoint": {
-//                                                                                                                                                         "videoId": "eWpHHU8a1OE",
-//                                                                                                                                                         "watchEndpointSupportedOnesieConfig": {
-//                                                                                                                                                             "html5PlaybackOnesieConfig": {
-//                                                                                                                                                                 "commonConfig": {
-//                                                                                                                                                                     "url": "https://rr2---sn-nh5mi0c-q5jk.googlevideo.com/initplayback?source=youtube&oeis=1&c=WEB&oad=3200&ovd=3200&oaad=11000&oavd=11000&ocs=700&oewis=1&oputc=1&olis=1&ofpcc=1&siu=1&msp=1&odepv=1&id=796a471d4f1ad4e1&ip=103.144.43.90&initcwndbps=962500&mt=1788471167&oweuc="
-//                                                                                                                                                                 }
-//                                                                                                                                                             }
-//                                                                                                                                                         }
-//                                                                                                                                                     }
-//                                                                                                                                                 }
-//                                                                                                                                             }
-//                                                                                                                                         }
-//                                                                                                                                     ]
-//                                                                                                                                 }
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     }
-//                                                                                                                 }
-//                                                                                                             }
-//                                                                                                         },
-//                                                                                                         {
-//                                                                                                             "listItemViewModel": {
-//                                                                                                                 "title": {
-//                                                                                                                     "content": "Save to Watch later"
-//                                                                                                                 },
-//                                                                                                                 "leadingImage": {
-//                                                                                                                     "sources": [
-//                                                                                                                         {
-//                                                                                                                             "clientResource": {
-//                                                                                                                                 "imageName": "WATCH_LATER"
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     ]
-//                                                                                                                 },
-//                                                                                                                 "rendererContext": {
-//                                                                                                                     "commandContext": {
-//                                                                                                                         "onTap": {
-//                                                                                                                             "innertubeCommand": {
-//                                                                                                                                 "clickTrackingParams": "CPIDEPBbIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                 "commandMetadata": {
-//                                                                                                                                     "webCommandMetadata": {
-//                                                                                                                                         "sendPost": true,
-//                                                                                                                                         "apiUrl": "/youtubei/v1/browse/edit_playlist"
-//                                                                                                                                     }
-//                                                                                                                                 },
-//                                                                                                                                 "playlistEditEndpoint": {
-//                                                                                                                                     "playlistId": "WL",
-//                                                                                                                                     "actions": [
-//                                                                                                                                         {
-//                                                                                                                                             "addedVideoId": "eWpHHU8a1OE",
-//                                                                                                                                             "action": "ACTION_ADD_VIDEO"
-//                                                                                                                                         }
-//                                                                                                                                     ]
-//                                                                                                                                 }
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     }
-//                                                                                                                 }
-//                                                                                                             }
-//                                                                                                         },
-//                                                                                                         {
-//                                                                                                             "listItemViewModel": {
-//                                                                                                                 "title": {
-//                                                                                                                     "content": "Save to playlist"
-//                                                                                                                 },
-//                                                                                                                 "leadingImage": {
-//                                                                                                                     "sources": [
-//                                                                                                                         {
-//                                                                                                                             "clientResource": {
-//                                                                                                                                 "imageName": "BOOKMARK_BORDER"
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     ]
-//                                                                                                                 },
-//                                                                                                                 "rendererContext": {
-//                                                                                                                     "loggingContext": {
-//                                                                                                                         "loggingDirectives": {
-//                                                                                                                             "trackingParams": "CPwDEJSsCRgCIhMIuaCzsK_TlgMVBUE4BR04HAzZ",
-//                                                                                                                             "visibility": {
-//                                                                                                                                 "types": "12"
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     },
-//                                                                                                                     "commandContext": {
-//                                                                                                                         "onTap": {
-//                                                                                                                             "innertubeCommand": {
-//                                                                                                                                 "clickTrackingParams": "CPwDEJSsCRgCIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                 "commandMetadata": {
-//                                                                                                                                     "interactionLoggingCommandMetadata": {
-//                                                                                                                                         "screenVisualElement": {
-//                                                                                                                                             "uiType": 264491
-//                                                                                                                                         }
-//                                                                                                                                     }
-//                                                                                                                                 },
-//                                                                                                                                 "showSheetCommand": {
-//                                                                                                                                     "panelLoadingStrategy": {
-//                                                                                                                                         "requestTemplate": {
-//                                                                                                                                             "panelId": "PAadd_to_playlist",
-//                                                                                                                                             "params": "-gYNCgtlV3BISFU4YTFPRQ%3D%3D"
-//                                                                                                                                         },
-//                                                                                                                                         "screenVe": 264491
-//                                                                                                                                     },
-//                                                                                                                                     "contextualSheetPresentationConfig": {
-//                                                                                                                                         "expandToFullWidth": true
-//                                                                                                                                     }
-//                                                                                                                                 }
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     }
-//                                                                                                                 }
-//                                                                                                             }
-//                                                                                                         },
-//                                                                                                         {
-//                                                                                                             "downloadListItemViewModel": {
-//                                                                                                                 "rendererContext": {
-//                                                                                                                     "loggingContext": {
-//                                                                                                                         "loggingDirectives": {
-//                                                                                                                             "trackingParams": "CPsDENGqBRgDIhMIuaCzsK_TlgMVBUE4BR04HAzZ",
-//                                                                                                                             "visibility": {
-//                                                                                                                                 "types": "12"
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     },
-//                                                                                                                     "commandContext": {
-//                                                                                                                         "onTap": {
-//                                                                                                                             "innertubeCommand": {
-//                                                                                                                                 "clickTrackingParams": "CPsDENGqBRgDIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                 "offlineVideoEndpoint": {
-//                                                                                                                                     "videoId": "eWpHHU8a1OE",
-//                                                                                                                                     "onAddCommand": {
-//                                                                                                                                         "clickTrackingParams": "CPsDENGqBRgDIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                         "getDownloadActionCommand": {
-//                                                                                                                                             "videoId": "eWpHHU8a1OE",
-//                                                                                                                                             "params": "CAIQAA%3D%3D",
-//                                                                                                                                             "isCrossDeviceDownload": false
-//                                                                                                                                         }
-//                                                                                                                                     }
-//                                                                                                                                 }
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     }
-//                                                                                                                 }
-//                                                                                                             }
-//                                                                                                         },
-//                                                                                                         {
-//                                                                                                             "listItemViewModel": {
-//                                                                                                                 "title": {
-//                                                                                                                     "content": "Share"
-//                                                                                                                 },
-//                                                                                                                 "leadingImage": {
-//                                                                                                                     "sources": [
-//                                                                                                                         {
-//                                                                                                                             "clientResource": {
-//                                                                                                                                 "imageName": "SHARE"
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     ]
-//                                                                                                                 },
-//                                                                                                                 "rendererContext": {
-//                                                                                                                     "commandContext": {
-//                                                                                                                         "onTap": {
-//                                                                                                                             "innertubeCommand": {
-//                                                                                                                                 "clickTrackingParams": "CPIDEPBbIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                 "commandMetadata": {
-//                                                                                                                                     "webCommandMetadata": {
-//                                                                                                                                         "sendPost": true,
-//                                                                                                                                         "apiUrl": "/youtubei/v1/share/get_share_panel"
-//                                                                                                                                     }
-//                                                                                                                                 },
-//                                                                                                                                 "shareEntityServiceEndpoint": {
-//                                                                                                                                     "serializedShareEntity": "CgtlV3BISFU4YTFPRQ%3D%3D",
-//                                                                                                                                     "commands": [
-//                                                                                                                                         {
-//                                                                                                                                             "clickTrackingParams": "CPIDEPBbIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                             "openPopupAction": {
-//                                                                                                                                                 "popup": {
-//                                                                                                                                                     "unifiedSharePanelRenderer": {
-//                                                                                                                                                         "trackingParams": "CPoDEI5iIhMIuaCzsK_TlgMVBUE4BR04HAzZ",
-//                                                                                                                                                         "showLoadingSpinner": true
-//                                                                                                                                                     }
-//                                                                                                                                                 },
-//                                                                                                                                                 "popupType": "DIALOG",
-//                                                                                                                                                 "beReused": true
-//                                                                                                                                             }
-//                                                                                                                                         }
-//                                                                                                                                     ]
-//                                                                                                                                 }
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     }
-//                                                                                                                 }
-//                                                                                                             }
-//                                                                                                         },
-//                                                                                                         {
-//                                                                                                             "listItemViewModel": {
-//                                                                                                                 "title": {
-//                                                                                                                     "content": "Not interested"
-//                                                                                                                 },
-//                                                                                                                 "leadingImage": {
-//                                                                                                                     "sources": [
-//                                                                                                                         {
-//                                                                                                                             "clientResource": {
-//                                                                                                                                 "imageName": "HIDE"
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     ]
-//                                                                                                                 },
-//                                                                                                                 "rendererContext": {
-//                                                                                                                     "commandContext": {
-//                                                                                                                         "onTap": {
-//                                                                                                                             "innertubeCommand": {
-//                                                                                                                                 "clickTrackingParams": "CPIDEPBbIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                 "commandMetadata": {
-//                                                                                                                                     "webCommandMetadata": {
-//                                                                                                                                         "sendPost": true,
-//                                                                                                                                         "apiUrl": "/youtubei/v1/feedback"
-//                                                                                                                                     }
-//                                                                                                                                 },
-//                                                                                                                                 "feedbackEndpoint": {
-//                                                                                                                                     "feedbackToken": "AB9zfpIyMZR1k-8DPclt7LBncksXbcgIXJgPPirs7IRk5JHErswnC00Dl2RALS0BDqmNvlP6LThHOgy_yd0zX3kRqqx0Y_5UD_z5YpW5DcGvHJxANDZPDvVw5AivQwuYlf2giovacL5-",
-//                                                                                                                                     "uiActions": {
-//                                                                                                                                         "hideEnclosingContainer": true
-//                                                                                                                                     },
-//                                                                                                                                     "actions": [
-//                                                                                                                                         {
-//                                                                                                                                             "clickTrackingParams": "CPIDEPBbIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                             "replaceEnclosingAction": {
-//                                                                                                                                                 "item": {
-//                                                                                                                                                     "notificationMultiActionRenderer": {
-//                                                                                                                                                         "responseText": {
-//                                                                                                                                                             "accessibility": {
-//                                                                                                                                                                 "accessibilityData": {
-//                                                                                                                                                                     "label": "Video removed: অ্যাপলের প্রধান নির্বাহী কর্মকর্তার পদ থেকে বিদায় নিলেন টিম কুক | Tim Cook | Apple CEO | Somoy TV."
-//                                                                                                                                                                 }
-//                                                                                                                                                             },
-//                                                                                                                                                             "simpleText": "Video removed"
-//                                                                                                                                                         },
-//                                                                                                                                                         "buttons": [
-//                                                                                                                                                             {
-//                                                                                                                                                                 "buttonRenderer": {
-//                                                                                                                                                                     "style": "STYLE_BLUE_TEXT",
-//                                                                                                                                                                     "text": {
-//                                                                                                                                                                         "simpleText": "Undo"
-//                                                                                                                                                                     },
-//                                                                                                                                                                     "serviceEndpoint": {
-//                                                                                                                                                                         "clickTrackingParams": "CPkDEPBbGAAiEwi5oLOwr9OWAxUFQTgFHTgcDNnKAQRRh1u9",
-//                                                                                                                                                                         "commandMetadata": {
-//                                                                                                                                                                             "webCommandMetadata": {
-//                                                                                                                                                                                 "sendPost": true,
-//                                                                                                                                                                                 "apiUrl": "/youtubei/v1/feedback"
-//                                                                                                                                                                             }
-//                                                                                                                                                                         },
-//                                                                                                                                                                         "undoFeedbackEndpoint": {
-//                                                                                                                                                                             "undoToken": "AB9zfpJ69IQ8lS5CJ0mQ5uq5i4r5FnGacjOqOi9iFoYK9xAPPi-8x77rBfr08aHvOFF-wLEJDnA8N_h0syYj7WVvuw2NdxuHqVTxWVwQ6ThUzqvbcPunpAJ0bnTncb_zJM-yTd-Ywgkb",
-//                                                                                                                                                                             "actions": [
-//                                                                                                                                                                                 {
-//                                                                                                                                                                                     "clickTrackingParams": "CPkDEPBbGAAiEwi5oLOwr9OWAxUFQTgFHTgcDNnKAQRRh1u9",
-//                                                                                                                                                                                     "undoFeedbackAction": {
-//                                                                                                                                                                                         "hack": true
-//                                                                                                                                                                                     }
-//                                                                                                                                                                                 }
-//                                                                                                                                                                             ],
-//                                                                                                                                                                             "contentId": "eWpHHU8a1OE"
-//                                                                                                                                                                         }
-//                                                                                                                                                                     },
-//                                                                                                                                                                     "trackingParams": "CPkDEPBbGAAiEwi5oLOwr9OWAxUFQTgFHTgcDNk="
-//                                                                                                                                                                 }
-//                                                                                                                                                             },
-//                                                                                                                                                             {
-//                                                                                                                                                                 "buttonRenderer": {
-//                                                                                                                                                                     "style": "STYLE_BLUE_TEXT",
-//                                                                                                                                                                     "text": {
-//                                                                                                                                                                         "runs": [
-//                                                                                                                                                                             {
-//                                                                                                                                                                                 "text": "Tell us why"
-//                                                                                                                                                                             }
-//                                                                                                                                                                         ]
-//                                                                                                                                                                     },
-//                                                                                                                                                                     "serviceEndpoint": {
-//                                                                                                                                                                         "clickTrackingParams": "CPgDEPBbGAEiEwi5oLOwr9OWAxUFQTgFHTgcDNnKAQRRh1u9",
-//                                                                                                                                                                         "commandMetadata": {
-//                                                                                                                                                                             "webCommandMetadata": {
-//                                                                                                                                                                                 "sendPost": true
-//                                                                                                                                                                             }
-//                                                                                                                                                                         },
-//                                                                                                                                                                         "signalServiceEndpoint": {
-//                                                                                                                                                                             "signal": "CLIENT_SIGNAL",
-//                                                                                                                                                                             "actions": [
-//                                                                                                                                                                                 {
-//                                                                                                                                                                                     "clickTrackingParams": "CPgDEPBbGAEiEwi5oLOwr9OWAxUFQTgFHTgcDNnKAQRRh1u9",
-//                                                                                                                                                                                     "signalAction": {
-//                                                                                                                                                                                         "signal": "TELL_US_WHY",
-//                                                                                                                                                                                         "targetId": "eWpHHU8a1OE"
-//                                                                                                                                                                                     }
-//                                                                                                                                                                                 }
-//                                                                                                                                                                             ]
-//                                                                                                                                                                         }
-//                                                                                                                                                                     },
-//                                                                                                                                                                     "trackingParams": "CPgDEPBbGAEiEwi5oLOwr9OWAxUFQTgFHTgcDNk="
-//                                                                                                                                                                 }
-//                                                                                                                                                             }
-//                                                                                                                                                         ],
-//                                                                                                                                                         "trackingParams": "CPcDEKW8ASITCLmgs7Cv05YDFQVBOAUdOBwM2Q==",
-//                                                                                                                                                         "dismissalViewStyle": "DISMISSAL_VIEW_STYLE_COMPACT_TALL"
-//                                                                                                                                                     }
-//                                                                                                                                                 }
-//                                                                                                                                             }
-//                                                                                                                                         }
-//                                                                                                                                     ],
-//                                                                                                                                     "contentId": "eWpHHU8a1OE"
-//                                                                                                                                 }
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     }
-//                                                                                                                 }
-//                                                                                                             }
-//                                                                                                         },
-//                                                                                                         {
-//                                                                                                             "listItemViewModel": {
-//                                                                                                                 "title": {
-//                                                                                                                     "content": "Don't recommend channel"
-//                                                                                                                 },
-//                                                                                                                 "leadingImage": {
-//                                                                                                                     "sources": [
-//                                                                                                                         {
-//                                                                                                                             "clientResource": {
-//                                                                                                                                 "imageName": "REMOVE"
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     ]
-//                                                                                                                 },
-//                                                                                                                 "rendererContext": {
-//                                                                                                                     "loggingContext": {
-//                                                                                                                         "loggingDirectives": {
-//                                                                                                                             "trackingParams": "CPMDEPLPAxgGIhMIuaCzsK_TlgMVBUE4BR04HAzZ",
-//                                                                                                                             "visibility": {
-//                                                                                                                                 "types": "12"
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     },
-//                                                                                                                     "commandContext": {
-//                                                                                                                         "onTap": {
-//                                                                                                                             "innertubeCommand": {
-//                                                                                                                                 "clickTrackingParams": "CPMDEPLPAxgGIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                 "commandMetadata": {
-//                                                                                                                                     "webCommandMetadata": {
-//                                                                                                                                         "sendPost": true,
-//                                                                                                                                         "apiUrl": "/youtubei/v1/feedback"
-//                                                                                                                                     }
-//                                                                                                                                 },
-//                                                                                                                                 "feedbackEndpoint": {
-//                                                                                                                                     "feedbackToken": "AB9zfpKoTcHa1oWbU86zutM6L4LSwRiqi7Wnj331Q-vY6XhRGrF-GtI-rOLVZMdcPV5jmqKjQjdi5maqhVR60KT1fjdtxt3bR6G0xNxIQmzaOHrsTZBk5X_EeqjqxpE0LFRs4jb4-2XTLLTOgBMk8WwN41pUzufVG18mXMGsNORgOGHLOqUgrak",
-//                                                                                                                                     "uiActions": {
-//                                                                                                                                         "hideEnclosingContainer": true
-//                                                                                                                                     },
-//                                                                                                                                     "actions": [
-//                                                                                                                                         {
-//                                                                                                                                             "clickTrackingParams": "CPMDEPLPAxgGIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                             "replaceEnclosingAction": {
-//                                                                                                                                                 "item": {
-//                                                                                                                                                     "notificationMultiActionRenderer": {
-//                                                                                                                                                         "responseText": {
-//                                                                                                                                                             "runs": [
-//                                                                                                                                                                 {
-//                                                                                                                                                                     "text": "We won't recommend videos from this channel to you again"
-//                                                                                                                                                                 }
-//                                                                                                                                                             ],
-//                                                                                                                                                             "accessibility": {
-//                                                                                                                                                                 "accessibilityData": {
-//                                                                                                                                                                     "label": "We won't recommend videos from this channel to you again"
-//                                                                                                                                                                 }
-//                                                                                                                                                             }
-//                                                                                                                                                         },
-//                                                                                                                                                         "buttons": [
-//                                                                                                                                                             {
-//                                                                                                                                                                 "buttonRenderer": {
-//                                                                                                                                                                     "style": "STYLE_BLUE_TEXT",
-//                                                                                                                                                                     "text": {
-//                                                                                                                                                                         "simpleText": "Undo"
-//                                                                                                                                                                     },
-//                                                                                                                                                                     "serviceEndpoint": {
-//                                                                                                                                                                         "clickTrackingParams": "CPYDEPBbGAAiEwi5oLOwr9OWAxUFQTgFHTgcDNnKAQRRh1u9",
-//                                                                                                                                                                         "commandMetadata": {
-//                                                                                                                                                                             "webCommandMetadata": {
-//                                                                                                                                                                                 "sendPost": true,
-//                                                                                                                                                                                 "apiUrl": "/youtubei/v1/feedback"
-//                                                                                                                                                                             }
-//                                                                                                                                                                         },
-//                                                                                                                                                                         "undoFeedbackEndpoint": {
-//                                                                                                                                                                             "undoToken": "AB9zfpKw4PBpVHCeXfKNU22SGxjwBay7JJOYHMXsrRx3UG6UkIv5BOsg0z1tvxGPJNRmbISF_o29pw3HfSKM67LlER3YKaAHELC6WGfZUIiuLuJCUWcPgssaR6vO2CkqIZa7ATavU_VlYUAC0ypNroTLpq6Vm5MCxL0mP0I-3yBfm_oF-pVgZno",
-//                                                                                                                                                                             "actions": [
-//                                                                                                                                                                                 {
-//                                                                                                                                                                                     "clickTrackingParams": "CPYDEPBbGAAiEwi5oLOwr9OWAxUFQTgFHTgcDNnKAQRRh1u9",
-//                                                                                                                                                                                     "undoFeedbackAction": {
-//                                                                                                                                                                                         "hack": true
-//                                                                                                                                                                                     }
-//                                                                                                                                                                                 }
-//                                                                                                                                                                             ],
-//                                                                                                                                                                             "contentId": "eWpHHU8a1OE"
-//                                                                                                                                                                         }
-//                                                                                                                                                                     },
-//                                                                                                                                                                     "trackingParams": "CPYDEPBbGAAiEwi5oLOwr9OWAxUFQTgFHTgcDNk="
-//                                                                                                                                                                 }
-//                                                                                                                                                             },
-//                                                                                                                                                             {
-//                                                                                                                                                                 "buttonRenderer": {
-//                                                                                                                                                                     "style": "STYLE_BLUE_TEXT",
-//                                                                                                                                                                     "text": {
-//                                                                                                                                                                         "simpleText": "Learn more"
-//                                                                                                                                                                     },
-//                                                                                                                                                                     "trackingParams": "CPUDEPBbGAEiEwi5oLOwr9OWAxUFQTgFHTgcDNk=",
-//                                                                                                                                                                     "command": {
-//                                                                                                                                                                         "clickTrackingParams": "CPUDEPBbGAEiEwi5oLOwr9OWAxUFQTgFHTgcDNnKAQRRh1u9",
-//                                                                                                                                                                         "commandMetadata": {
-//                                                                                                                                                                             "webCommandMetadata": {
-//                                                                                                                                                                                 "url": "//support.google.com/youtube/answer/6342839?hl=en",
-//                                                                                                                                                                                 "webPageType": "WEB_PAGE_TYPE_UNKNOWN",
-//                                                                                                                                                                                 "rootVe": 83769
-//                                                                                                                                                                             }
-//                                                                                                                                                                         },
-//                                                                                                                                                                         "urlEndpoint": {
-//                                                                                                                                                                             "url": "//support.google.com/youtube/answer/6342839?hl=en",
-//                                                                                                                                                                             "target": "TARGET_NEW_WINDOW"
-//                                                                                                                                                                         }
-//                                                                                                                                                                     }
-//                                                                                                                                                                 }
-//                                                                                                                                                             }
-//                                                                                                                                                         ],
-//                                                                                                                                                         "trackingParams": "CPQDEKW8ASITCLmgs7Cv05YDFQVBOAUdOBwM2Q==",
-//                                                                                                                                                         "dismissalViewStyle": "DISMISSAL_VIEW_STYLE_COMPACT_TALL"
-//                                                                                                                                                     }
-//                                                                                                                                                 }
-//                                                                                                                                             }
-//                                                                                                                                         }
-//                                                                                                                                     ],
-//                                                                                                                                     "contentId": "eWpHHU8a1OE"
-//                                                                                                                                 }
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     }
-//                                                                                                                 }
-//                                                                                                             }
-//                                                                                                         },
-//                                                                                                         {
-//                                                                                                             "listItemViewModel": {
-//                                                                                                                 "title": {
-//                                                                                                                     "content": "Report"
-//                                                                                                                 },
-//                                                                                                                 "leadingImage": {
-//                                                                                                                     "sources": [
-//                                                                                                                         {
-//                                                                                                                             "clientResource": {
-//                                                                                                                                 "imageName": "FLAG"
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     ]
-//                                                                                                                 },
-//                                                                                                                 "rendererContext": {
-//                                                                                                                     "commandContext": {
-//                                                                                                                         "onTap": {
-//                                                                                                                             "innertubeCommand": {
-//                                                                                                                                 "clickTrackingParams": "CPIDEPBbIhMIuaCzsK_TlgMVBUE4BR04HAzZygEEUYdbvQ==",
-//                                                                                                                                 "commandMetadata": {
-//                                                                                                                                     "webCommandMetadata": {
-//                                                                                                                                         "sendPost": true,
-//                                                                                                                                         "apiUrl": "/youtubei/v1/flag/get_form"
-//                                                                                                                                     }
-//                                                                                                                                 },
-//                                                                                                                                 "getReportFormEndpoint": {
-//                                                                                                                                     "params": "EgtlV3BISFU4YTFPRUABWABwAXgC2AEA6AEA"
-//                                                                                                                                 }
-//                                                                                                                             }
-//                                                                                                                         }
-//                                                                                                                     }
-//                                                                                                                 }
-//                                                                                                             }
-//                                                                                                         }
-//                                                                                                     ]
-//                                                                                                 }
-//                                                                                             }
-//                                                                                         }
-//                                                                                     }
-//                                                                                 }
-//                                                                             }
-//                                                                         }
-//                                                                     },
-//                                                                     "accessibilityText": "More actions",
-//                                                                     "style": "BUTTON_VIEW_MODEL_STYLE_MONO",
-//                                                                     "trackingParams": "CPIDEPBbIhMIuaCzsK_TlgMVBUE4BR04HAzZ",
-//                                                                     "type": "BUTTON_VIEW_MODEL_TYPE_TEXT",
-//                                                                     "buttonSize": "BUTTON_VIEW_MODEL_SIZE_DEFAULT",
-//                                                                     "state": "BUTTON_VIEW_MODEL_STATE_ACTIVE"
-//                                                                 }
-//                                                             }
-//                                                         }
-//                                                     },
-
 
