@@ -884,6 +884,7 @@ function filterInitialFeed() {
 
             videosReady = true;
             startObserverIfReady();
+            console.log('end of filter initial feed videos');
         }
     );
 
@@ -989,15 +990,83 @@ function waitForVideoChannel(elm) {
 
 // Show or hide a video based on whether its channel is allowlisted.
 // Wait for the channel link if YouTube has not rendered it yet.
+const hiddenVideos = new WeakSet();
+
+// function filterVideoItem(elm) {
+//     const link = elm.querySelector(
+//         '#content yt-lockup-view-model .ytLockupViewModelMetadata .ytLockupMetadataViewModelTextContainer .ytContentMetadataViewModelHost .ytAttributedStringHost a.ytAttributedStringLink'
+//     );
+
+//     if (!link) {
+//         hiddenVideos.add(elm);
+//         observeVideoVisibility(elm);
+//         elm.style.display = "none";
+//         console.log('hello');
+//         waitForVideoChannel(elm);
+//         return;
+//     }
+
+//     const href = link.getAttribute("href");
+//     const allowed = allowlistedChannelHandles.has(href);
+
+//     if (allowed) {
+//         hiddenVideos.delete(elm);
+//         elm.style.display = "";
+//     } else {
+//         hiddenVideos.add(elm);
+//         observeVideoVisibility(elm);
+//         elm.style.display = "none";
+//     }
+
+//     // if (allowed) {
+//     //     elm.style.display = "";
+//     // } else {
+//     //     observeVideoVisibility(elm);
+//     //     elm.style.display = "none";
+
+//     //     // setTimeout(() => {
+//     //     //     console.log(
+//     //     //         "1 second later:",
+//     //     //         elm.style.display,
+//     //     //         getComputedStyle(elm).display,
+//     //     //         elm
+//     //     //     );
+//     //     // }, 1000);
+//     // }
+
+//     console.log({
+//         href,
+//         allowed,
+//         display: elm.style.display,
+//         element: elm
+//     });
+// }
+
+// const ownDisplayChanges = new WeakMap();
+
+// function setVideoDisplay(elm, display) {
+//     ownDisplayChanges.set(elm, display);
+//     elm.style.display = display;
+// }
 function filterVideoItem(elm) {
+    console.log("FILTER START", {
+        elm,
+        display: elm.style.display
+    });
+
     const link = elm.querySelector(
         '#content yt-lockup-view-model .ytLockupViewModelMetadata .ytLockupMetadataViewModelTextContainer .ytContentMetadataViewModelHost .ytAttributedStringHost a.ytAttributedStringLink'
     );
 
+    console.log("LINK:", link);
+
     if (!link) {
-        // elm.style.display = "none";
-        // observeVideoVisibility(elm);
-        console.log('hello');
+        console.log("NO LINK → HIDING");
+
+        hiddenVideos.add(elm);
+        observeVideoVisibility(elm);
+        elm.style.display = "none";
+
         waitForVideoChannel(elm);
         return;
     }
@@ -1005,30 +1074,27 @@ function filterVideoItem(elm) {
     const href = link.getAttribute("href");
     const allowed = allowlistedChannelHandles.has(href);
 
-    if (allowed) {
-        elm.style.display = "";
-    } else {
-        elm.style.display = "none";
-        observeVideoVisibility(elm);
-
-        setTimeout(() => {
-            console.log(
-                "1 second later:",
-                elm.style.display,
-                getComputedStyle(elm).display,
-                elm
-            );
-        }, 1000);
-    }
-
-    console.log({
+    console.log("CHANNEL RESULT:", {
         href,
         allowed,
+        beforeDisplay: elm.style.display,
+        hidden: hiddenVideos.has(elm)
+    });
+
+    if (allowed) {
+        hiddenVideos.delete(elm);
+        elm.style.display = "";
+    } else {
+        hiddenVideos.add(elm);
+        observeVideoVisibility(elm);
+        elm.style.display = "none";
+    }
+
+    console.log("FILTER END:", {
         display: elm.style.display,
-        element: elm
+        hidden: hiddenVideos.has(elm)
     });
 }
-
 
 const observingVisibility = new WeakSet();
 
@@ -1040,9 +1106,13 @@ function observeVideoVisibility(elm) {
     observingVisibility.add(elm);
 
     const observer = new MutationObserver(() => {
-        if (elm.style.display !== "none") {
+        if (hiddenVideos.has(elm) && elm.style.display !== "none") {
             elm.style.display = "none";
         }
+
+        // if (elm.style.display !== "none") {
+        //     elm.style.display = "none";
+        // }
     });
 
     observer.observe(elm, {
