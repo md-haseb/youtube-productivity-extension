@@ -924,6 +924,7 @@ function startFeedObserver() {
                         continue;
                     }
 
+                    observeVideoItem(node);
                     filterVideoItem(node);
                 }
 
@@ -941,6 +942,7 @@ function startFeedObserver() {
         .querySelectorAll("ytd-rich-item-renderer")
         .forEach(video => {
             if (!video.closest("ytd-rich-section-renderer")) {
+                observeVideoItem(video);
                 filterVideoItem(video);
             }
         });
