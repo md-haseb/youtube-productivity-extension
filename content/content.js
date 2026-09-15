@@ -19,18 +19,39 @@ const settings = {
   }
 
 
+let allowlistedChannels = [];
+async function initializeContentScript() {
+    const [settingsResult, allowlistResult] = await Promise.all([
+        chrome.storage.sync.get(settings),
+        chrome.storage.sync.get("allowlistedChannels")
+    ]);
 
+    Object.assign(settings, settingsResult);
+    allowlistedChannels = allowlistResult.allowlistedChannels || [];
+
+    window.postMessage({
+        type: "ALLOWLIST_UPDATED",
+        allowlistedChannels
+    }, "*");
+
+    if (!settings.extensionEnabled) return;
+
+    applyAllFeatures();
+    startMutationObserver(settings);
+}
+
+initializeContentScript();
 
 // Load saved settings and apply them when the content script initializes.
-chrome.storage.sync.get(settings, (result) => {
-  Object.assign(settings, result);
+// chrome.storage.sync.get(settings, (result) => {
+//   Object.assign(settings, result);
 
-  if (!settings.extensionEnabled) return; 
+//   if (!settings.extensionEnabled) return; 
 
-  applyAllFeatures();
+//   applyAllFeatures();
 
-  startMutationObserver(settings);
-});
+//   startMutationObserver(settings);
+// });
 
 
 
@@ -51,9 +72,14 @@ chrome.runtime.onMessage.addListener((message) => {
       startMutationObserver(settings);
       break;
 
+    // case "hideHomeFeed":
+    //   settings.hideHomeFeed = message.enabled;
+    //   toggleHomeFeed(settings.hideHomeFeed);
+    //   break;
     case "hideHomeFeed":
       settings.hideHomeFeed = message.enabled;
-      toggleHomeFeed(settings.hideHomeFeed);
+      console.log('culprit');
+      applyHomeFeedFeature();
       break;
 
     case "hideShorts":
@@ -155,7 +181,7 @@ function restoreAllFeatures() {
 
 
 function applyAllFeatures() {
-  toggleHomeFeed(settings.hideHomeFeed);
+  applyHomeFeedFeature();
   toggleShorts(settings.hideShorts);
   toggleComments(settings.hideComments);
   toggleLiveChat(settings.hideLiveChat);
@@ -173,6 +199,41 @@ function applyAllFeatures() {
 }
 
 
+
+
+function applyHomeFeedFeature() {
+    console.log("hideHomeFeed:", settings.hideHomeFeed);
+    console.log("allowlistedChannels:", allowlistedChannels);
+
+    if (!settings.hideHomeFeed) {
+        console.log("Home feed: SHOW");
+        toggleHomeFeed(false);
+
+    } else if (allowlistedChannels.length === 0) {
+        console.log("Home feed: HIDE ENTIRE FEED");
+        toggleHomeFeed(true);
+
+    } else {
+        console.log("Home feed: FILTER");
+        window.postMessage({
+            type: "START_FILTER_INITIAL_FEED"
+        }, "*");
+    }
+}
+// function applyHomeFeedFeature() {
+//     if (!settings.hideHomeFeed) {
+//         toggleHomeFeed(settings.hideHomeFeed);
+//         console.log('culprit');
+//     } else if (allowlistedChannels.length === 0) {
+//         console.log('culprit');
+//         toggleHomeFeed(settings.hideHomeFeed);
+//     } else {
+//         console.log('culprit');
+//         window.postMessage({
+//             type: "START_FILTER_INITIAL_FEED"
+//         }, "*");
+//     }
+// }
 
 
 
@@ -216,18 +277,30 @@ window.addEventListener("message", (event) => {
 
 
 
+// let allowlistedChannels = [];
 
+// async function sendAllowlistedChannelsToPage() {
+//     const { allowlistedChannels = [] } =
+//         await chrome.storage.sync.get("allowlistedChannels");
 
-async function sendAllowlistedChannelsToPage() {
-    const { allowlistedChannels = [] } =
-        await chrome.storage.sync.get("allowlistedChannels");
+//     window.postMessage({
+//         type: "ALLOWLIST_UPDATED",
+//         allowlistedChannels
+//     }, "*");
+// }
+// async function sendAllowlistedChannelsToPage() {
+//     const result = await chrome.storage.sync.get("allowlistedChannels");
 
-    window.postMessage({
-        type: "ALLOWLIST_UPDATED",
-        allowlistedChannels
-    }, "*");
-}
-sendAllowlistedChannelsToPage();
+//     allowlistedChannels = result.allowlistedChannels || [];
+
+//     window.postMessage({
+//         type: "ALLOWLIST_UPDATED",
+//         allowlistedChannels
+//     }, "*");
+// }
+
+// sendAllowlistedChannelsToPage();
+
 
 
 
@@ -237,7 +310,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 
     if (!changes.allowlistedChannels) return;
 
-    const allowlistedChannels =
+    allowlistedChannels =
         changes.allowlistedChannels.newValue || [];
 
     window.postMessage(

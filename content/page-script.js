@@ -568,6 +568,13 @@ window.addEventListener("message", (event) => {
     );
 
     console.log(allowlistedChannelHandles);
+    console.log(allowlistedChannelHandles.size);
+
+    // if(allowlistedChannelHandles.size) {
+
+    // } else {
+    //     filterInitialFeed();
+    // }
 
     // filterRecommendedVideos();
 });
@@ -579,90 +586,7 @@ window.addEventListener("message", (event) => {
 
 
 
-// function waitForInitialFeed(callback) {
-//   let lastCount = 0;
-//   let stableSince = null;
-
-//   const checkFeed = () => {
-//     const items = document.querySelectorAll(
-//       "ytd-rich-item-renderer, ytd-rich-section-renderer"
-//     );
-
-//     const currentCount = items.length;
-
-//     if (currentCount === 0) {
-//       requestAnimationFrame(checkFeed);
-//       return;
-//     }
-
-//     if (currentCount !== lastCount) {
-//       lastCount = currentCount;
-//       stableSince = Date.now();
-//     }
-
-//     // YouTube does not expose a reliable signal indicating that the
-//     // initial feed has finished loading, so use a 2-second stability
-//     // period as a practical Version1 trade-off.
-//     if (Date.now() - stableSince >= 2000) {
-//       callback(items);
-//       return;
-//     }
-
-//     requestAnimationFrame(checkFeed);
-//   };
-
-//   checkFeed();
-// }
-
-
-// function waitForInitialFeed(callback) {
-//     let lastCount = 0;
-//     let stableSince = null;
-
-//     const checkFeed = () => {
-//         // const videoItems = document.querySelectorAll(
-//         //     "ytd-rich-item-renderer"
-//         // );
-//         const videoItems = [
-//             ...document.querySelectorAll("ytd-rich-item-renderer")
-//         ].filter(
-//             item => !item.closest("ytd-rich-section-renderer")
-//         );
-
-//         // const sections = document.querySelectorAll(
-//         //     "ytd-rich-section-renderer"
-//         // );
-
-//         const currentCount = videoItems.length;
-
-//         if (currentCount === 0) {
-//             requestAnimationFrame(checkFeed);
-//             return;
-//         }
-
-//         if (currentCount !== lastCount) {
-//             lastCount = currentCount;
-//             stableSince = Date.now();
-//         }
-
-//         // YouTube does not expose a reliable signal indicating that the
-//         // initial feed has finished loading, so use a 2-second stability
-//         // period as a practical Version1 trade-off.
-//         if (Date.now() - stableSince >= 2000) {
-//             // callback({
-//             //     videoItems,
-//             //     sections
-//             // });
-//             callback(videoItems);
-//             return;
-//         }
-
-//         requestAnimationFrame(checkFeed);
-//     };
-
-//     checkFeed();
-// }
-
+// before processing, wait until the initial elements stop changing for 2 seconds in home page
 function waitForInitialElements(getElements, callback) {
     let lastCount = 0;
     let stableSince = null;
@@ -698,156 +622,6 @@ function waitForInitialElements(getElements, callback) {
 
 
 
-// async function initializeHomeFeedFiltering() {
-//     let attempts = 0;
-//     const maxAttempts = 40;
-
-//     return new Promise((resolve, reject) => {
-//         const interval = setInterval(() => {
-//             attempts++;
-
-//             const app = document.querySelector('ytd-app');
-
-//             if (app?.data?.response) {
-
-//                 clearInterval(interval);
-
-//                 const videoInfos = findVideoInfos(app.data.response);
-
-//                 console.log(videoInfos);
-
-//                 const videos = videoInfos
-//                     .filter(content => content.browseId && content.channelHandle && content.videoId)
-//                     .map(content => ({
-//                         browseId: content.browseId,
-//                         channelHandle: content.channelHandle,
-//                         videoId: content.videoId
-//                     }));
-
-//                 console.log(videos);
-
-//                 // const allowlistedVideoIds = new Set(
-//                 //     videos
-//                 //         .filter(video => allowlistedChannelIds.has(video.browseId))
-//                 //         .map(video => video.videoId)
-//                 // );
-
-//                 const allowlistedHandles = new Set(
-//                     videos
-//                         .filter(video => allowlistedChannelHandles.has(video.channelHandle))
-//                         .map(video => video.channelHandle)
-//                 );
-
-//                 console.log(allowlistedHandles);
-
-//                 window.postMessage({
-//                     type: "START_INFINITE_SCROLLING",
-//                     isDisable: true
-//                 }, "*");
-
-//                 filterInitialFeed(allowlistedHandles);
-
-//                 resolve(app);
-//                 return;
-//             }
-
-//             if (attempts >= maxAttempts) {
-//                 clearInterval(interval);
-//                 reject(new Error("Could not detect ytd-app response"));
-//             }
-//         }, 250);
-//     });
-// }
-
-// initializeHomeFeedFiltering();
-
-
-
-// function filterInitialFeed(allowlistedChannelHandles) {
-//     waitForInitialFeed((initialFeed) => {
-//         initialFeed.forEach(elm => {
-//             const link = elm.querySelector(
-//                 '#content yt-lockup-view-model .ytLockupViewModelMetadata .ytLockupMetadataViewModelTextContainer .ytContentMetadataViewModelHost .ytAttributedStringHost a.ytAttributedStringLink'
-//             );
-
-//             // Hide feed items that don't contain the expected regular-video link.
-//             // This prevents unsupported content types (e.g. Shorts/Playables sections) from
-//             // bypassing the allowlist filter.
-//             if(!link) {
-//                 console.log('NO LINK:', elm);
-//                 elm.style.display = 'none';
-//                 return;
-//             }
-
-//             const href = link?.getAttribute('href');
-//             console.log('DOM LINK:', href);
-
-//             if (!href) {
-//                 return;
-//             }
-
-//             // const params = new URLSearchParams(href.split('?')[1]);
-//             // const videoId = params.get('v');
-
-//             // console.log('DOM VIDEO ID:', videoId);
-//             // console.log('IS ALLOWED:', allowlistedHandles.has(videoId));
-
-//             // if (!videoId) {
-//             //     // console.log(videoId);
-//             //     return;
-//             // }
-
-//             if (allowlistedChannelHandles.has(href)) {
-//                 // console.log(elm, videoId);
-//                 elm.style.display = '';
-//             } else {
-//                 // console.log(elm, videoId);
-//                 elm.style.display = 'none';
-//             }
-
-//             // if (!allowlistedVideoIds.has(videoId)) {
-//             //     elm.style.display = 'none';
-//             // }
-//         });
-//     });
-
-//     window.postMessage({
-//         type: "START_INFINITE_SCROLLING",
-//         isDisable: true
-//     }, "*");
-// }
-// function filterInitialFeed() {
-//     waitForInitialElements(
-//         () =>
-//             [...document.querySelectorAll("ytd-rich-item-renderer")]
-//                 .filter(item =>
-//                     !item.closest("ytd-rich-section-renderer")
-//                 ),
-//         (videoItems) => {
-//             console.log("Initial videos:", videoItems.length);
-
-//             window.postMessage({
-//                 type: "START_INFINITE_SCROLLING",
-//                 isDisable: true
-//             }, "*");
-
-//             videoItems.forEach(filterVideoItem);
-//         }
-//     );
-
-//     waitForInitialElements(
-//         () => [
-//             ...document.querySelectorAll("ytd-rich-section-renderer")
-//         ],
-//         (sections) => {
-//             console.log("Initial sections:", sections.length);
-
-//             sections.forEach(filterSection);
-//         }
-//     );
-
-//     startFeedObserver();
-// }
 
 // Process the initial homepage feed by filtering videos and sections,
 // then start observing the feed for dynamically added content.
@@ -902,7 +676,17 @@ function filterInitialFeed() {
         }
     );
 }
-filterInitialFeed();
+// filterInitialFeed();
+
+window.addEventListener("message", (event) => {
+    if (event.source !== window) {
+        return;
+    }
+
+    if (event.data?.type === "START_FILTER_INITIAL_FEED") {
+        filterInitialFeed();
+    }
+});
 
 
 // Observe the homepage for dynamically added feed content and apply
@@ -994,62 +778,6 @@ function waitForVideoChannel(elm) {
 // Wait for the channel link if YouTube has not rendered it yet.
 const hiddenVideos = new WeakSet();
 
-// function filterVideoItem(elm) {
-//     const link = elm.querySelector(
-//         '#content yt-lockup-view-model .ytLockupViewModelMetadata .ytLockupMetadataViewModelTextContainer .ytContentMetadataViewModelHost .ytAttributedStringHost a.ytAttributedStringLink'
-//     );
-
-//     if (!link) {
-//         hiddenVideos.add(elm);
-//         observeVideoVisibility(elm);
-//         elm.style.display = "none";
-//         console.log('hello');
-//         waitForVideoChannel(elm);
-//         return;
-//     }
-
-//     const href = link.getAttribute("href");
-//     const allowed = allowlistedChannelHandles.has(href);
-
-//     if (allowed) {
-//         hiddenVideos.delete(elm);
-//         elm.style.display = "";
-//     } else {
-//         hiddenVideos.add(elm);
-//         observeVideoVisibility(elm);
-//         elm.style.display = "none";
-//     }
-
-//     // if (allowed) {
-//     //     elm.style.display = "";
-//     // } else {
-//     //     observeVideoVisibility(elm);
-//     //     elm.style.display = "none";
-
-//     //     // setTimeout(() => {
-//     //     //     console.log(
-//     //     //         "1 second later:",
-//     //     //         elm.style.display,
-//     //     //         getComputedStyle(elm).display,
-//     //     //         elm
-//     //     //     );
-//     //     // }, 1000);
-//     // }
-
-//     console.log({
-//         href,
-//         allowed,
-//         display: elm.style.display,
-//         element: elm
-//     });
-// }
-
-// const ownDisplayChanges = new WeakMap();
-
-// function setVideoDisplay(elm, display) {
-//     ownDisplayChanges.set(elm, display);
-//     elm.style.display = display;
-// }
 function filterVideoItem(elm) {
     console.log("FILTER START", {
         elm,
@@ -1098,6 +826,12 @@ function filterVideoItem(elm) {
     });
 }
 
+
+
+
+
+
+// Monitor the video item's display style and re-hide it if YouTube makes it visible.
 const observingVisibility = new WeakSet();
 
 function observeVideoVisibility(elm) {
@@ -1124,6 +858,12 @@ function observeVideoVisibility(elm) {
 }
 
 
+
+
+
+
+
+
 // Hide the homepage section from the feed.
 function filterSection(section) {
     // section filtering logic
@@ -1131,6 +871,11 @@ function filterSection(section) {
 }
 
 
+
+
+
+
+// Re-filter the video item when YouTube dynamically updates its content.
 const observedVideoItems = new WeakSet();
 
 function observeVideoItem(elm) {
@@ -1149,271 +894,3 @@ function observeVideoItem(elm) {
         subtree: true
     });
 }
-// function filterInitialFeed() {
-//     waitForInitialElements(
-//         () =>
-//             [...document.querySelectorAll("ytd-rich-item-renderer")]
-//                 .filter(item => !item.closest("ytd-rich-section-renderer")),
-//         (videoItems) => {
-//         console.log(videoItems.length);
-//         window.postMessage({
-//             type: "START_INFINITE_SCROLLING",
-//             isDisable: true
-//         }, "*");
-//         console.log(videoItems.length);
-//         // sections.forEach(section => {
-//         //     section.style.display = 'none';
-//         // });
-
-//         videoItems.forEach(elm => {
-//             const link = elm.querySelector(
-//                 '#content yt-lockup-view-model .ytLockupViewModelMetadata .ytLockupMetadataViewModelTextContainer .ytContentMetadataViewModelHost .ytAttributedStringHost a.ytAttributedStringLink'
-//             );
-
-//             if(!link) {
-//                 console.log('NO LINK:', elm);
-//                 elm.style.display = 'none';
-//                 return;
-//             }
-
-//             const href = link.getAttribute('href');
-
-//             console.log(allowlistedChannelHandles, href);
-//             if (allowlistedChannelHandles.has(href)) {
-//                 console.log('hello1');
-//                 elm.style.display = '';
-//             } else {
-//                 console.log('hello2');
-//                 elm.style.display = 'none';
-//             }
-//         });
-
-//     });
-//     // waitForInitialElements(
-//     //     () => [...document.querySelectorAll("ytd-rich-section-renderer")],
-//     //     sections => {
-//     //         // process sections
-//     //         console.log(sections);
-//     //         sections.forEach(section => {
-//     //             console.log('hello3');
-//     //             section.style.display = 'none';
-//     //         });
-//     //     }
-//     // );
-// }
-// filterInitialFeed();
-// function filterInitialFeed(allowlistedHandles) {
-//     waitForInitialFeed((initialFeed) => {
-//         initialFeed.forEach(elm => {
-//             const link = elm.querySelector(
-//                 '#content yt-lockup-view-model a.ytLockupViewModelContentImage'
-//             );
-
-//             // Hide feed items that don't contain the expected regular-video link.
-//             // This prevents unsupported content types (e.g. Shorts/Playables sections) from
-//             // bypassing the allowlist filter.
-//             if(!link) {
-//                 console.log('NO LINK:', elm);
-//                 elm.style.display = 'none';
-//                 return;
-//             }
-
-//             const href = link?.getAttribute('href');
-//             console.log('DOM LINK:', href);
-
-//             if (!href) {
-//                 return;
-//             }
-
-//             const params = new URLSearchParams(href.split('?')[1]);
-//             const videoId = params.get('v');
-
-//             console.log('DOM VIDEO ID:', videoId);
-//             console.log('IS ALLOWED:', allowlistedHandles.has(videoId));
-
-//             if (!videoId) {
-//                 // console.log(videoId);
-//                 return;
-//             }
-
-//             if (allowlistedVideoIds.has(videoId)) {
-//                 // console.log(elm, videoId);
-//                 elm.style.display = '';
-//             } else {
-//                 // console.log(elm, videoId);
-//                 elm.style.display = 'none';
-//             }
-
-//             // if (!allowlistedVideoIds.has(videoId)) {
-//             //     elm.style.display = 'none';
-//             // }
-//         });
-//     });
-// }
-
-
-
-
-// async function initializeHomeFeedFiltering() {
-
-//     let attempts = 0;
-//     const maxAttempts = 40;
-
-//     return new Promise((resolve, reject) => {
-//         const interval = setInterval(() => {
-//             attempts++;
-
-//             const app = document.querySelector('ytd-app');
-//             // const allElements = document.querySelectorAll('ytd-rich-item-renderer');
-
-
-//             if (app.data.response) {
-//                 clearInterval(interval);
-
-//                 const videoInfos = findVideoInfos(app.data.response);
-
-//                 const map = videoInfos
-//                     .filter(content => content.browseId && content.videoId)
-//                     .map(content => ({
-//                         browseId: content.browseId,
-//                         videoId: content.videoId
-//                     }));
-
-//                 console.log(videoInfos);
-//                 console.log(map);
-
-//                 const setOfMatch = new Set();
-
-//                 map.forEach(c => {
-//                     if(allowlistedChannelIds.has(c.browseId)) {
-//                         console.log('has');
-//                         setOfMatch.add(c);
-//                     } else {
-//                         console.log('none');
-//                     }
-//                 }); 
-
-//                 console.log(setOfMatch);
-
-//                 // const allElements = document.querySelectorAll('ytd-rich-item-renderer');
-
-//                 waitForInitialFeed((initialFeed) => {
-//                     const initialItems = new Set(initialFeed);
-//                     console.log(initialItems);
-
-//                     initialItems.forEach(elm => {
-//                     const domVideoId = elm.querySelector('#content yt-lockup-view-model a.ytLockupViewModelContentImage');
-//                     // console.log(domVideoId);
-
-//                     const href = domVideoId?.getAttribute("href");
-//                     const params = new URLSearchParams(href?.split("?")[1]);
-
-//                     const videoId = params.get("v");
-
-//                     console.log(videoId);
-
-//                     const videoIdMap = new Set([...setOfMatch].map(v => v.videoId));
-//                     console.log(videoIdMap);
-
-//                     if(!videoIdMap.has(videoId)) {
-//                         elm.style.display = 'none';
-//                     }
-//                 })
-//                 });
-                
-
-//                 // const { browseIds, url } =
-//                 //     findBrowseEndpoints(app.data.response);
-
-//                 // console.log(browseIds);
-//                 // console.log(url);
-
-//                 // const hasAllowlistedChannel =
-//                 //     [...browseIds].some(id => allowlistedChannelIds.has(id));
-
-//                 // console.log(hasAllowlistedChannel);
-
-//                 resolve(app);
-//                 return;
-//             }
-//             if (attempts >= maxAttempts) {
-//                 clearInterval(interval);
-//                 reject(new Error("Could not detect channel info from app data"));
-//             }
-//         }, 250);
-//     });
-// }
-// initializeHomeFeedFiltering();
-
-
-
-
-// function findVideoInfoFromMetadata(metadata) {
-//     let browseEndpoint = null;
-//     let watchEndpoint = null;
-
-//     function search(obj) {
-//         if (!obj || typeof obj !== "object") {
-//             return;
-//         }
-
-//         if (!browseEndpoint && obj.browseEndpoint?.browseId && obj.browseEndpoint?.canonicalBaseUrl) {
-//             browseEndpoint = obj.browseEndpoint;
-//         }
-
-//         if (!watchEndpoint && obj.watchEndpoint?.videoId) {
-//             watchEndpoint = obj.watchEndpoint;
-//         }
-
-//         if (browseEndpoint && watchEndpoint) {
-//             return;
-//         }
-
-//         for (const value of Object.values(obj)) {
-//             search(value);
-
-//             if (browseEndpoint && watchEndpoint) {
-//                 return;
-//             }
-//         }
-//     }
-
-//     search(metadata);
-
-//     if (!browseEndpoint || !watchEndpoint) {
-//         return null;
-//     }
-
-//     return {
-//         browseId: browseEndpoint.browseId,
-//         channelHandle: browseEndpoint.canonicalBaseUrl,
-//         videoId: watchEndpoint.videoId
-//     };
-// }
-
-
-
-// function findVideoInfos(obj, videoInfos = []) {
-//     if (!obj || typeof obj !== "object") {
-//         return videoInfos;
-//     }
-
-//     if (obj.metadata) {
-//         const videoInfo = findVideoInfoFromMetadata(obj.metadata);
-
-//         if (videoInfo) {
-//             videoInfos.push(videoInfo);
-//         }
-//     }
-
-//     for (const value of Object.values(obj)) {
-//         findVideoInfos(value, videoInfos);
-//     }
-
-//     return videoInfos;
-// }
-
-// const videoInfos = findVideoInfos(app.data.response);
-
-// console.log(videoInfos);
-
