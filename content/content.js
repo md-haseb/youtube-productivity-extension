@@ -16,9 +16,12 @@ const settings = {
     'hideSubscriptions': false,
     'hideSearchSuggestions': false,
     'disableInfiniteScrolling': false
-  }
+}
 
 
+
+// Loads extension settings and allowlisted channels, then initializes all features
+// and the mutation observer when the extension is enabled.
 let allowlistedChannels = [];
 async function initializeContentScript() {
     const [settingsResult, allowlistResult] = await Promise.all([
@@ -78,7 +81,6 @@ chrome.runtime.onMessage.addListener((message) => {
     //   break;
     case "hideHomeFeed":
       settings.hideHomeFeed = message.enabled;
-      console.log('culprit');
       applyHomeFeedFeature();
       break;
 
@@ -200,13 +202,22 @@ function applyAllFeatures() {
 
 
 
-
+// Applies the home feed setting based on the current toggle state and allowlisted channels.
+// - Disabled: show the feed and stop allowlist-based filtering.
+// - Enabled with no allowlist: hide the entire home feed.
+// - Enabled with an allowlist: filter the feed to show only allowlisted channels.
 function applyHomeFeedFeature() {
     console.log("hideHomeFeed:", settings.hideHomeFeed);
     console.log("allowlistedChannels:", allowlistedChannels);
 
     if (!settings.hideHomeFeed) {
         console.log("Home feed: SHOW");
+        startInfiniteScrollingObserver(false);
+
+        window.postMessage({
+            type: "STOP_FILTER_HOME_FEED"
+        }, "*");
+
         toggleHomeFeed(false);
 
     } else if (allowlistedChannels.length === 0) {
@@ -220,20 +231,7 @@ function applyHomeFeedFeature() {
         }, "*");
     }
 }
-// function applyHomeFeedFeature() {
-//     if (!settings.hideHomeFeed) {
-//         toggleHomeFeed(settings.hideHomeFeed);
-//         console.log('culprit');
-//     } else if (allowlistedChannels.length === 0) {
-//         console.log('culprit');
-//         toggleHomeFeed(settings.hideHomeFeed);
-//     } else {
-//         console.log('culprit');
-//         window.postMessage({
-//             type: "START_FILTER_INITIAL_FEED"
-//         }, "*");
-//     }
-// }
+
 
 
 

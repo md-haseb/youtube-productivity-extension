@@ -678,6 +678,11 @@ function filterInitialFeed() {
 }
 // filterInitialFeed();
 
+
+
+
+
+// Handles messages for starting and stopping home feed filtering.
 window.addEventListener("message", (event) => {
     if (event.source !== window) {
         return;
@@ -685,6 +690,10 @@ window.addEventListener("message", (event) => {
 
     if (event.data?.type === "START_FILTER_INITIAL_FEED") {
         filterInitialFeed();
+    }
+
+    if (event.data?.type === "STOP_FILTER_HOME_FEED") {
+        stopHomeFeedFiltering();
     }
 });
 
@@ -776,7 +785,8 @@ function waitForVideoChannel(elm) {
 
 // Show or hide a video based on whether its channel is allowlisted.
 // Wait for the channel link if YouTube has not rendered it yet.
-const hiddenVideos = new WeakSet();
+// const hiddenVideos = new WeakSet();
+const hiddenVideos = new Set();
 
 function filterVideoItem(elm) {
     console.log("FILTER START", {
@@ -830,34 +840,77 @@ function filterVideoItem(elm) {
 
 
 
+// Restores all hidden videos and clears the hidden video references.
+function restoreHiddenVideos() {
+    hiddenVideos.forEach((elm) => {
+        elm.style.display = "";
+    });
+
+    hiddenVideos.clear();
+}
+
+
+
+
+
 
 // Monitor the video item's display style and re-hide it if YouTube makes it visible.
-const observingVisibility = new WeakSet();
+// const observingVisibility = new WeakSet();
+
+// function observeVideoVisibility(elm) {
+//     if (observingVisibility.has(elm)) {
+//         return;
+//     }
+
+//     observingVisibility.add(elm);
+
+//     const observer = new MutationObserver(() => {
+//         if (hiddenVideos.has(elm) && elm.style.display !== "none") {
+//             elm.style.display = "none";
+//         }
+
+//         // if (elm.style.display !== "none") {
+//         //     elm.style.display = "none";
+//         // }
+//     });
+
+//     observer.observe(elm, {
+//         attributes: true,
+//         attributeFilter: ["style"]
+//     });
+// }
+const visibilityObservers = new Map();
 
 function observeVideoVisibility(elm) {
-    if (observingVisibility.has(elm)) {
+    if (visibilityObservers.has(elm)) {
         return;
     }
-
-    observingVisibility.add(elm);
 
     const observer = new MutationObserver(() => {
         if (hiddenVideos.has(elm) && elm.style.display !== "none") {
             elm.style.display = "none";
         }
-
-        // if (elm.style.display !== "none") {
-        //     elm.style.display = "none";
-        // }
     });
 
     observer.observe(elm, {
         attributes: true,
         attributeFilter: ["style"]
     });
+
+    visibilityObservers.set(elm, observer);
 }
 
 
+
+
+// Stops all visibility observers and clears the observer references.
+function stopVisibilityObservers() {
+    visibilityObservers.forEach(observer => {
+        observer.disconnect();
+    });
+
+    visibilityObservers.clear();
+}
 
 
 
@@ -876,14 +929,12 @@ function filterSection(section) {
 
 
 // Re-filter the video item when YouTube dynamically updates its content.
-const observedVideoItems = new WeakSet();
+const videoObservers = new Map();
 
 function observeVideoItem(elm) {
-    if (observedVideoItems.has(elm)) {
+    if (videoObservers.has(elm)) {
         return;
     }
-
-    observedVideoItems.add(elm);
 
     const observer = new MutationObserver(() => {
         filterVideoItem(elm);
@@ -893,4 +944,41 @@ function observeVideoItem(elm) {
         childList: true,
         subtree: true
     });
+
+    videoObservers.set(elm, observer);
+}
+
+// const observedVideoItems = new WeakSet();
+
+// function observeVideoItem(elm) {
+//     if (observedVideoItems.has(elm)) {
+//         return;
+//     }
+
+//     observedVideoItems.add(elm);
+
+//     const observer = new MutationObserver(() => {
+//         filterVideoItem(elm);
+//     });
+
+//     observer.observe(elm, {
+//         childList: true,
+//         subtree: true
+//     });
+// }
+
+
+
+
+// Stops all observers used for home feed filtering and restores hidden videos.
+function stopHomeFeedFiltering() {
+    videoObservers.forEach(observer => {
+        observer.disconnect();
+    });
+
+    videoObservers.clear();
+
+    stopVisibilityObservers();
+
+    restoreHiddenVideos();
 }
