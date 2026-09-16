@@ -19,9 +19,9 @@ function startMutationObserver(settings) {
   stopMutationObserver();
 
   observer = new MutationObserver(() => {
-    if (settings.hideHomeFeed) {
-      toggleHomeFeed(settings.hideHomeFeed);
-    }
+    // if (settings.hideHomeFeed) {
+    //   toggleHomeFeed(settings.hideHomeFeed);
+    // }
 
     if (settings.hideShorts) {
       toggleShorts(settings.hideShorts);
