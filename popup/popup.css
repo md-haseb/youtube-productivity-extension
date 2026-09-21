@@ -1165,3 +1165,24 @@ body {
   color: #9999a3;
   font-size: 12px;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+.automatic-detection-header.is-disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.automatic-detection-card.is-disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}

@@ -440,3 +440,137 @@ function updateAllowlistCount() {
         }
     );
 }
+
+
+
+
+
+
+
+
+//manual detection section
+
+// const allowedChannelTabs = [
+//     "videos",
+//     "shorts",
+//     "live",
+//     "podcasts",
+//     "playlists",
+//     "community",
+//     "posts"
+// ];
+
+const manualForm = document.querySelector('.manual-detection-form');
+const manualInput = document.querySelector('.manual-channel-input');
+const manualSectionBottom = document.querySelector('.manual-section-bottom');
+const manualActionButton = document.querySelector('.manual-detection-find-btn');
+
+const automaticDetectionHeader = document.querySelector('.automatic-detection-header');
+const automaticDetectionCard = document.querySelector('.automatic-detection-card');
+const automaticDetectionBottom = document.querySelector('.automatic-detection-bottom');
+
+manualForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const manualInputUrl = manualInput.value.trim();
+    const urlType = getYouTubeUrlType(manualInputUrl);
+    // if(urlType) {
+    //     manualSectionBottom.textContent = 'Finding Channel...';
+    //     manualActionButton.textContent = 'Finding';
+    // }
+
+    console.log('hello');
+    console.log(urlType);
+
+    resetAutomaticDetectionUI();
+    setAutomaticDetectionPaused(true);
+
+    if (urlType === "watch" || urlType === "channel") {
+        const [tab] = await chrome.tabs.query({
+            active: true,
+            currentWindow: true
+        });
+
+        await chrome.tabs.update(tab.id, {
+            url: manualInputUrl
+        });
+    }
+});
+
+function getYouTubeUrlType(input) {
+    try {
+        const url = new URL(input.trim());
+
+        // Must be YouTube
+        if (
+            url.protocol !== "https:" ||
+            !["www.youtube.com", "youtube.com"].includes(url.hostname)
+        ) {
+            return null;
+        }
+
+        // Watch page
+        const videoId = url.searchParams.get("v");
+        if (
+            url.pathname === "/watch" &&
+            videoId &&
+            /^[A-Za-z0-9_-]{11}$/.test(videoId)
+        ) {
+            return "watch";
+        }
+
+        // Handle-based channel page
+
+        // if (/^\/@[\w.-]+$/.test(url.pathname)) {
+        //     return "channel";
+        // }
+
+        // const match = url.pathname.match(/^\/@([\w.-]+)(?:\/([\w.-]+))?$/);
+
+        // if (!match) {
+        //     return null;
+        // }
+
+        // const tab = match[2];
+
+        // if (!tab || allowedChannelTabs.includes(tab.toLowerCase())) {
+        //     return "channel";
+        // }
+
+        const match = url.pathname.match(/^\/@([\w.-]+)(?:\/[\w.-]+)?$/);
+
+        if (match) {
+            return "channel";
+        }
+
+
+
+        return null;
+
+    } catch {
+        return null;
+    }
+}
+
+
+function setAutomaticDetectionPaused(paused) {
+    automaticDetectionHeader.classList.toggle('is-disabled', paused);
+    automaticDetectionCard.classList.toggle('is-disabled', paused);
+
+    if (paused) {
+        automaticDetectionBottom.textContent = 'Automatic detection paused';
+    } else {
+        automaticDetectionBottom.textContent = 'Automatic detection works on YouTube watch pages and channel pages.';
+    }
+}
+
+
+function resetAutomaticDetectionUI() {
+    channelName.textContent = "—";
+    channelDetectionStatus.textContent = "No channel detected";
+    channelIconImage.src = chrome.runtime.getURL(
+        "assets/icons/allowlist/default-channel-icon.svg"
+    );
+    allowlistActionButton.disabled = true;
+    allowlistActionButton.textContent = "Add";
+}

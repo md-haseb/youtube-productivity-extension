@@ -32,9 +32,9 @@ async function handleNavigation() {
 
     const url = new URL(newUrl);
 
-    if (url.pathname === '/') {
-        initializeHomeFeedFiltering();
-    }
+    // if (url.pathname === '/') {
+    //     initializeHomeFeedFiltering();
+    // }
 
     if (isWatchPage(url)) {
         console.log("Watch page detected");
