@@ -2,6 +2,8 @@
 
 let prevUrl = null;
 
+let channelInfoInterval = null;
+
 function isWatchPage(url) {
     return (
         url.pathname === "/watch" &&
@@ -234,9 +236,10 @@ function waitForChannelIconFromWatchPageDOM(callback) {
 
 
 // Waits for the current channel info to become available in the watch page DOM.
-let channelInfoInterval = null;
+// let channelInfoInterval = null;
 
 function waitForChannelInfoFromWatchPageDOM() {
+    
     if (channelInfoInterval) {
         clearInterval(channelInfoInterval);
     }

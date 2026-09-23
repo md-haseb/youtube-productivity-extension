@@ -204,6 +204,10 @@ const allowlistActionButton = document.querySelector('.allowlist-action-btn');
 const allowlistedChannelList = document.querySelector('.allowlisted-channel-list');
 const allowlistedChannelCount = document.querySelector('.channel-count');
 
+let isManualDetectionActive = false;
+const manualChannelName = document.querySelector('.manual-channel-label');
+const manualChannelDetectionStatus = document.querySelector('.manual-channel-detection-status');
+const manualChannelIconImage = document.querySelector('.manual-channel-icon-img');
 
 
 
@@ -217,6 +221,17 @@ chrome.storage.session.get("currentChannelInfo", (result) => {
     }
 
     console.log(currentChannelInfo);
+
+    if(isManualDetectionActive) {
+        manualChannelName.textContent = currentChannelInfo.channelName;
+        manualChannelDetectionStatus.textContent =
+            currentChannelInfo.channelDetectionStatus;
+        manualChannelIconImage.src = currentChannelInfo.channelIcon;
+        isManualDetectionActive = false;
+        console.log(manualChannelName, manualChannelDetectionStatus, manualChannelIconImage);
+        console.log(currentChannelInfo.channelId);
+        return;
+    }
 
     channelName.textContent = currentChannelInfo.channelName;
     channelDetectionStatus.textContent =
@@ -482,20 +497,74 @@ manualForm.addEventListener('submit', async (event) => {
     console.log('hello');
     console.log(urlType);
 
+    if (urlType !== "watch" && urlType !== "channel") {
+        console.log("Invalid YouTube URL");
+        return;
+    }
+
+    // Manual detection has started
+    isManualDetectionActive = true;
+
     resetAutomaticDetectionUI();
     setAutomaticDetectionPaused(true);
 
-    if (urlType === "watch" || urlType === "channel") {
-        const [tab] = await chrome.tabs.query({
-            active: true,
-            currentWindow: true
-        });
+    const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true
+    });
 
-        await chrome.tabs.update(tab.id, {
-            url: manualInputUrl
-        });
-    }
+    console.log("Active tab:", tab);
+
+    await chrome.tabs.update(tab.id, {
+        url: manualInputUrl
+    });
+
+    // if (urlType === "watch" || urlType === "channel") {
+    //     const [tab] = await chrome.tabs.query({
+    //         active: true,
+    //         currentWindow: true
+    //     });
+
+    //     await chrome.tabs.update(tab.id, {
+    //         url: manualInputUrl
+    //     });
+    // }
 });
+
+// manualForm.addEventListener('submit', async (event) => {
+//     event.preventDefault();
+
+//     const manualInputUrl = manualInput.value.trim();
+//     const urlType = getYouTubeUrlType(manualInputUrl);
+
+//     console.log('URL:', manualInputUrl);
+//     console.log('URL type:', urlType);
+
+//     if (urlType !== "watch" && urlType !== "channel") {
+//         console.log("Invalid YouTube URL");
+//         return;
+//     }
+
+//     resetAutomaticDetectionUI();
+//     setAutomaticDetectionPaused(true);
+
+//     try {
+//         const [tab] = await chrome.tabs.query({
+//             active: true,
+//             currentWindow: true
+//         });
+
+//         console.log("Active tab:", tab);
+
+//         await chrome.tabs.update(tab.id, {
+//             url: manualInputUrl
+//         });
+
+//         console.log("Navigation requested");
+//     } catch (error) {
+//         console.error("Navigation failed:", error);
+//     }
+// });
 
 function getYouTubeUrlType(input) {
     try {
