@@ -200,47 +200,148 @@ navItems.forEach((item) => {
 const channelName = document.querySelector('.channel-label');
 const channelDetectionStatus = document.querySelector('.channel-detection-status');
 const channelIconImage = document.querySelector('.channel-icon-img');
-const allowlistActionButton = document.querySelector('.allowlist-action-btn');
+const allowlistActionButtons = document.querySelectorAll('.allowlist-action-btn');
 const allowlistedChannelList = document.querySelector('.allowlisted-channel-list');
 const allowlistedChannelCount = document.querySelector('.channel-count');
+const automaticAllowlistActionButton = document.querySelector('.automatic-detected-allowlist-btn');
 
+// let currentChannelInfo = null;
+let currentAutomaticChannelInfo = null;
+let currentManualChannelInfo = null;
 let isManualDetectionActive = false;
 const manualChannelName = document.querySelector('.manual-channel-label');
 const manualChannelDetectionStatus = document.querySelector('.manual-channel-detection-status');
 const manualChannelIconImage = document.querySelector('.manual-channel-icon-img');
+const manualAllowlistActionButton = document.querySelector('.manual-detected-allowlist-btn');
+const manualSectionBottom = document.querySelector('.manual-section-bottom');
+const manualFindButton = document.querySelector('.manual-detection-find-btn');
+
+chrome.runtime.onMessage.addListener((message) => {
+    if (message.type !== "CHANNEL_INFO") {
+        return;
+    }
+
+    const channelInfo = message.channelInfo;
+
+    console.log("CHANNEL_INFO received:", channelInfo);
+    console.log("Manual detection:", isManualDetectionActive);
+
+    if (isManualDetectionActive) {
+        currentManualChannelInfo = channelInfo;
+
+        manualSectionBottom.textContent = 'Channel Detected...';
+        manualFindButton.textContent = 'Find';
+
+        manualChannelName.textContent =
+            channelInfo.channelName;
+
+        manualChannelDetectionStatus.textContent =
+            channelInfo.channelDetectionStatus;
+
+        manualChannelIconImage.src =
+            channelInfo.channelIcon;
+
+        updateAllowlistButton(
+            channelInfo,
+            manualAllowlistActionButton
+        );
+
+        isManualDetectionActive = false;
+
+        return;
+    }
+
+    // Automatic detection UI
+    currentAutomaticChannelInfo = channelInfo;
+
+    channelName.textContent =
+        channelInfo.channelName;
+
+    channelDetectionStatus.textContent =
+        channelInfo.channelDetectionStatus;
+
+    channelIconImage.src =
+        channelInfo.channelIcon;
+
+    updateAllowlistButton(
+        channelInfo,
+        automaticAllowlistActionButton
+    );
+});
 
 
-
-let currentChannelInfo = null;
+// let currentChannelInfo = null;
 
 chrome.storage.session.get("currentChannelInfo", (result) => {
-    currentChannelInfo = result.currentChannelInfo;
+    currentAutomaticChannelInfo = result.currentChannelInfo;
 
-    if (!currentChannelInfo) {
+    if (!currentAutomaticChannelInfo) {
         return;
     }
 
-    console.log(currentChannelInfo);
+    console.log(currentAutomaticChannelInfo);
 
-    if(isManualDetectionActive) {
-        manualChannelName.textContent = currentChannelInfo.channelName;
-        manualChannelDetectionStatus.textContent =
-            currentChannelInfo.channelDetectionStatus;
-        manualChannelIconImage.src = currentChannelInfo.channelIcon;
-        isManualDetectionActive = false;
-        console.log(manualChannelName, manualChannelDetectionStatus, manualChannelIconImage);
-        console.log(currentChannelInfo.channelId);
-        return;
-    }
+    channelName.textContent =
+        currentAutomaticChannelInfo.channelName;
 
-    channelName.textContent = currentChannelInfo.channelName;
     channelDetectionStatus.textContent =
-        currentChannelInfo.channelDetectionStatus;
-    channelIconImage.src = currentChannelInfo.channelIcon;
-    console.log(currentChannelInfo.channelId);
+        currentAutomaticChannelInfo.channelDetectionStatus;
 
-    if (!currentChannelInfo.channelId) {
-        allowlistActionButton.setAttribute("disabled", "");
+    channelIconImage.src =
+        currentAutomaticChannelInfo.channelIcon;
+
+    console.log(currentAutomaticChannelInfo.channelId);
+
+    updateAllowlistButton(
+        currentAutomaticChannelInfo,
+        automaticAllowlistActionButton
+    );
+
+    // currentChannelInfo = result.currentChannelInfo;
+
+    // if (!currentChannelInfo) {
+    //     return;
+    // }
+
+    // console.log(currentChannelInfo);
+
+    // channelName.textContent = currentChannelInfo.channelName;
+    // channelDetectionStatus.textContent =
+    //     currentChannelInfo.channelDetectionStatus;
+    // channelIconImage.src = currentChannelInfo.channelIcon;
+    // console.log(currentChannelInfo.channelId);
+
+    // updateAllowlistButton(
+    //     currentChannelInfo,
+    //     automaticAllowlistActionButton
+    // );
+
+    // chrome.storage.sync.get(
+    //     "allowlistedChannels",
+    //     ({ allowlistedChannels = [] }) => {
+
+    //         const alreadyAllowlisted = allowlistedChannels.some(
+    //             channel => channel.channelId === currentChannelInfo.channelId
+    //         );
+
+    //         if (alreadyAllowlisted) {
+    //             allowlistActionButton.setAttribute("disabled", "");
+    //             allowlistActionButton.textContent = "Added";
+    //         } else {
+    //             allowlistActionButton.removeAttribute("disabled");
+    //             allowlistActionButton.textContent = "Add";
+    //         }
+    //     }
+    // );
+
+});
+
+
+
+function updateAllowlistButton(channelInfo, actionButton) {
+    if (!channelInfo?.channelId) {
+        actionButton.setAttribute("disabled", "");
+        actionButton.textContent = "Add";
         return;
     }
 
@@ -249,36 +350,45 @@ chrome.storage.session.get("currentChannelInfo", (result) => {
         ({ allowlistedChannels = [] }) => {
 
             const alreadyAllowlisted = allowlistedChannels.some(
-                channel => channel.channelId === currentChannelInfo.channelId
+                channel => channel.channelId === channelInfo.channelId
             );
 
             if (alreadyAllowlisted) {
-                allowlistActionButton.setAttribute("disabled", "");
-                allowlistActionButton.textContent = "Added";
+                actionButton.setAttribute("disabled", "");
+                actionButton.textContent = "Added";
             } else {
-                allowlistActionButton.removeAttribute("disabled");
-                allowlistActionButton.textContent = "Add";
+                actionButton.removeAttribute("disabled");
+                actionButton.textContent = "Add";
             }
         }
     );
+}
+
+automaticAllowlistActionButton.addEventListener('click', () => {
+    addCurrentChannelToAllowlist(
+        currentAutomaticChannelInfo,
+        automaticAllowlistActionButton
+    );
 });
 
+manualAllowlistActionButton.addEventListener('click', () => {
+    addCurrentChannelToAllowlist(
+        currentManualChannelInfo,
+        manualAllowlistActionButton
+    );
+});
 
-
-
-
-
-allowlistActionButton.addEventListener('click', () => {
-    if (!currentChannelInfo?.channelId) {
+function addCurrentChannelToAllowlist(channelInfo, actionButton) {
+    if (!channelInfo?.channelId) {
         return;
     }
 
     addChannelToAllowlist(
         {
-            channelId: currentChannelInfo.channelId,
-            channelName: currentChannelInfo.channelName,
-            channelHandle: currentChannelInfo.channelHandle,
-            channelIcon: currentChannelInfo.channelIcon
+            channelId: channelInfo.channelId,
+            channelName: channelInfo.channelName,
+            channelHandle: channelInfo.channelHandle,
+            channelIcon: channelInfo.channelIcon
         },
         (added) => {
             if (!added) {
@@ -286,18 +396,50 @@ allowlistActionButton.addEventListener('click', () => {
             }
 
             const channelItem = createAllowlistedChannelItem(
-                currentChannelInfo.channelId,
-                currentChannelInfo.channelName,
-                currentChannelInfo.channelIcon
+                channelInfo.channelId,
+                channelInfo.channelName,
+                channelInfo.channelIcon
             );
 
             allowlistedChannelList.prepend(channelItem);
 
-            allowlistActionButton.textContent = 'Added';
-            allowlistActionButton.setAttribute('disabled', '');
+            actionButton.textContent = 'Added';
+            actionButton.setAttribute('disabled', '');
         }
     );
-});
+}
+
+
+// allowlistActionButton.addEventListener('click', () => {
+//     if (!currentChannelInfo?.channelId) {
+//         return;
+//     }
+
+//     addChannelToAllowlist(
+//         {
+//             channelId: currentChannelInfo.channelId,
+//             channelName: currentChannelInfo.channelName,
+//             channelHandle: currentChannelInfo.channelHandle,
+//             channelIcon: currentChannelInfo.channelIcon
+//         },
+//         (added) => {
+//             if (!added) {
+//                 return;
+//             }
+
+//             const channelItem = createAllowlistedChannelItem(
+//                 currentChannelInfo.channelId,
+//                 currentChannelInfo.channelName,
+//                 currentChannelInfo.channelIcon
+//             );
+
+//             allowlistedChannelList.prepend(channelItem);
+
+//             allowlistActionButton.textContent = 'Added';
+//             allowlistActionButton.setAttribute('disabled', '');
+//         }
+//     );
+// });
 
 
 
@@ -367,10 +509,20 @@ function removeChannelFromAllowlist(channelId, listItem) {
 
                     listItem.remove();
 
-                    if (currentChannelInfo?.channelId === channelId) {
-                        allowlistActionButton.disabled = false;
-                        allowlistActionButton.textContent = "Add";
+                    if (currentAutomaticChannelInfo?.channelId === channelId) {
+                        automaticAllowlistActionButton.disabled = false;
+                        automaticAllowlistActionButton.textContent = "Add";
                     }
+
+                    if (currentManualChannelInfo?.channelId === channelId) {
+                        manualAllowlistActionButton.disabled = false;
+                        manualAllowlistActionButton.textContent = "Add";
+                    }
+
+                    // if (currentChannelInfo?.channelId === channelId) {
+                    //     allowlistActionButton.disabled = false;
+                    //     allowlistActionButton.textContent = "Add";
+                    // }
 
                     updateAllowlistCount();
                 }
@@ -477,8 +629,8 @@ function updateAllowlistCount() {
 
 const manualForm = document.querySelector('.manual-detection-form');
 const manualInput = document.querySelector('.manual-channel-input');
-const manualSectionBottom = document.querySelector('.manual-section-bottom');
-const manualActionButton = document.querySelector('.manual-detection-find-btn');
+// const manualSectionBottom = document.querySelector('.manual-section-bottom');
+// const manualFindButton = document.querySelector('.manual-detection-find-btn');
 
 const automaticDetectionHeader = document.querySelector('.automatic-detection-header');
 const automaticDetectionCard = document.querySelector('.automatic-detection-card');
@@ -489,10 +641,10 @@ manualForm.addEventListener('submit', async (event) => {
 
     const manualInputUrl = manualInput.value.trim();
     const urlType = getYouTubeUrlType(manualInputUrl);
-    // if(urlType) {
-    //     manualSectionBottom.textContent = 'Finding Channel...';
-    //     manualActionButton.textContent = 'Finding';
-    // }
+    if(urlType) {
+        manualSectionBottom.textContent = 'Finding Channel...';
+        manualFindButton.textContent = 'Finding';
+    }
 
     console.log('hello');
     console.log(urlType);
@@ -640,6 +792,6 @@ function resetAutomaticDetectionUI() {
     channelIconImage.src = chrome.runtime.getURL(
         "assets/icons/allowlist/default-channel-icon.svg"
     );
-    allowlistActionButton.disabled = true;
-    allowlistActionButton.textContent = "Add";
+    automaticAllowlistActionButton.disabled = true;
+    automaticAllowlistActionButton.textContent = "Add";
 }

@@ -897,7 +897,7 @@ body {
    Action Button
    ========================================= */
 
-.allowlist-action-btn {
+.allowlist-action-btn, .manual-detection-find-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -927,17 +927,17 @@ body {
 }
 
 
-.allowlist-action-btn:hover {
+.allowlist-action-btn:hover, .manual-detection-find-btn:hover {
   background: #1d1d7c;
 }
 
 
-.allowlist-action-btn:active {
+.allowlist-action-btn:active, .manual-detection-find-btn:active {
   transform: translateY(1px);
 }
 
 
-.allowlist-action-btn:disabled {
+.allowlist-action-btn:disabled, .manual-detection-find-btn:disabled {
   background: #d9d9e2;
   color: #9696a0;
 
