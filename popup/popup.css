@@ -954,6 +954,7 @@ body {
 
   font-size: 11px;
   line-height: 1.45;
+  /* min-height: 10px; */
   color: #92929b;
 }
 
@@ -1008,6 +1009,14 @@ body {
   border-color: #242590;
   box-shadow: 0 0 0 3px rgba(36, 37, 144, 0.08);
 }
+
+/* .manual-detection-card-error-message {
+  margin: 9px 2px 0;
+
+  font-size: 11px;
+  line-height: 1.45;
+  color: #92929b;
+} */
 
 
 /* =========================================
@@ -1167,7 +1176,9 @@ body {
 }
 
 .manual-detection-card {
-  display: flex;
+  display: none;
+  margin: 10px 2px 0;
+
 }
 
 
