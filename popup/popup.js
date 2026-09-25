@@ -197,27 +197,135 @@ navItems.forEach((item) => {
 //UCeVMnSShP_Iviwkknt83cww
 
 
-const channelName = document.querySelector('.channel-label');
-const channelDetectionStatus = document.querySelector('.channel-detection-status');
-const channelIconImage = document.querySelector('.channel-icon-img');
-const allowlistActionButtons = document.querySelectorAll('.allowlist-action-btn');
-const allowlistedChannelList = document.querySelector('.allowlisted-channel-list');
-const allowlistedChannelCount = document.querySelector('.channel-count');
-const automaticAllowlistActionButton = document.querySelector('.automatic-detected-allowlist-btn');
-const automaticDetectionBottom = document.querySelector('.automatic-detection-bottom');
+// ============================================================
+// DOM REFERENCES
+// ============================================================
+
+// Automatic detection
+const channelName =
+    document.querySelector('.channel-label');
+
+const channelDetectionStatus =
+    document.querySelector('.channel-detection-status');
+
+const channelIconImage =
+    document.querySelector('.channel-icon-img');
+
+const automaticAllowlistActionButton =
+    document.querySelector('.automatic-detected-allowlist-btn');
+
+const automaticDetectionHeader =
+    document.querySelector('.automatic-detection-header');
+
+const automaticDetectionCard =
+    document.querySelector('.automatic-detection-card');
+
+const automaticDetectionBottom =
+    document.querySelector('.automatic-detection-bottom');
+
+
+// Manual detection
+const manualForm =
+    document.querySelector('.manual-detection-form');
+
+const manualInput =
+    document.querySelector('.manual-channel-input');
+
+const manualFindButton =
+    document.querySelector('.manual-detection-find-btn');
+
+const manualChannelCard =
+    document.querySelector('.manual-detection-card');
+
+const manualChannelName =
+    document.querySelector('.manual-channel-label');
+
+const manualChannelDetectionStatus =
+    document.querySelector('.manual-channel-detection-status');
+
+const manualChannelIconImage =
+    document.querySelector('.manual-channel-icon-img');
+
+const manualAllowlistActionButton =
+    document.querySelector('.manual-detected-allowlist-btn');
+
+const manualSectionBottom =
+    document.querySelector('.manual-section-bottom');
+
+
+// Allowlist
+const allowlistedChannelList =
+    document.querySelector('.allowlisted-channel-list');
+
+const allowlistedChannelCount =
+    document.querySelector('.channel-count');
+
+
+// ============================================================
+// STATE
+// ============================================================
 
 let currentAutomaticChannelInfo = null;
 let currentManualChannelInfo = null;
+
 let isManualDetectionActive = false;
 let automaticDetectionPaused = false;
-const manualInput = document.querySelector('.manual-channel-input');
-const manualChannelName = document.querySelector('.manual-channel-label');
-const manualChannelDetectionStatus = document.querySelector('.manual-channel-detection-status');
-const manualChannelIconImage = document.querySelector('.manual-channel-icon-img');
-const manualAllowlistActionButton = document.querySelector('.manual-detected-allowlist-btn');
-const manualSectionBottom = document.querySelector('.manual-section-bottom');
-const manualFindButton = document.querySelector('.manual-detection-find-btn');
-const manualChannelCard = document.querySelector('.manual-detection-card');
+
+
+// ============================================================
+// INITIALIZATION
+// ============================================================
+
+// Restore the latest automatic detection result
+chrome.storage.session.get("currentChannelInfo", (result) => {
+    currentAutomaticChannelInfo = result.currentChannelInfo;
+
+    if (!currentAutomaticChannelInfo) {
+        return;
+    }
+
+    console.log(currentAutomaticChannelInfo);
+
+    channelName.textContent =
+        currentAutomaticChannelInfo.channelName;
+
+    channelDetectionStatus.textContent =
+        currentAutomaticChannelInfo.channelDetectionStatus;
+
+    channelIconImage.src =
+        currentAutomaticChannelInfo.channelIcon;
+
+    updateAllowlistButton(
+        currentAutomaticChannelInfo,
+        automaticAllowlistActionButton
+    );
+});
+
+
+// Render allowlisted channels
+chrome.storage.sync.get(
+    "allowlistedChannels",
+    ({ allowlistedChannels = [] }) => {
+
+        allowlistedChannels.forEach(channel => {
+            const channelItem = createAllowlistedChannelItem(
+                channel.channelId,
+                channel.channelName,
+                channel.channelIcon
+            );
+
+            allowlistedChannelList.appendChild(channelItem);
+        });
+
+        allowlistedChannelCount.textContent =
+            allowlistedChannels.length;
+    }
+);
+
+
+// ============================================================
+// CHANNEL INFO MESSAGE
+// ============================================================
 
 chrome.runtime.onMessage.addListener((message) => {
     if (message.type !== "CHANNEL_INFO") {
@@ -227,14 +335,21 @@ chrome.runtime.onMessage.addListener((message) => {
     const channelInfo = message.channelInfo;
 
     console.log("CHANNEL_INFO received:", channelInfo);
-    console.log("Manual detection:", isManualDetectionActive);
+    console.log(
+        "Manual detection:",
+        isManualDetectionActive
+    );
 
+    // Manual detection result
     if (isManualDetectionActive) {
         currentManualChannelInfo = channelInfo;
 
         manualInput.value = '';
         manualSectionBottom.textContent = '';
+        manualSectionBottom.style.color = '#92929b';
+
         manualFindButton.textContent = 'Find';
+
         manualChannelCard.style.display = 'flex';
 
         manualChannelName.textContent =
@@ -256,7 +371,7 @@ chrome.runtime.onMessage.addListener((message) => {
         return;
     }
 
-    // Automatic detection UI
+    // Automatic detection result
     currentAutomaticChannelInfo = channelInfo;
 
     channelName.textContent =
@@ -275,35 +390,31 @@ chrome.runtime.onMessage.addListener((message) => {
 });
 
 
+// ============================================================
+// ALLOWLIST BUTTON HANDLERS
+// ============================================================
 
-chrome.storage.session.get("currentChannelInfo", (result) => {
-    currentAutomaticChannelInfo = result.currentChannelInfo;
-
-    if (!currentAutomaticChannelInfo) {
-        return;
-    }
-
-    console.log(currentAutomaticChannelInfo);
-
-    channelName.textContent =
-        currentAutomaticChannelInfo.channelName;
-
-    channelDetectionStatus.textContent =
-        currentAutomaticChannelInfo.channelDetectionStatus;
-
-    channelIconImage.src =
-        currentAutomaticChannelInfo.channelIcon;
-
-    console.log(currentAutomaticChannelInfo.channelId);
-
-    updateAllowlistButton(
+automaticAllowlistActionButton.addEventListener('click', () => {
+    addCurrentChannelToAllowlist(
         currentAutomaticChannelInfo,
-        automaticAllowlistActionButton
+        automaticAllowlistActionButton,
+        automaticDetectionBottom
     );
-
 });
 
 
+manualAllowlistActionButton.addEventListener('click', () => {
+    addCurrentChannelToAllowlist(
+        currentManualChannelInfo,
+        manualAllowlistActionButton,
+        manualSectionBottom
+    );
+});
+
+
+// ============================================================
+// ALLOWLIST
+// ============================================================
 
 function updateAllowlistButton(channelInfo, actionButton) {
     if (!channelInfo?.channelId) {
@@ -316,9 +427,11 @@ function updateAllowlistButton(channelInfo, actionButton) {
         "allowlistedChannels",
         ({ allowlistedChannels = [] }) => {
 
-            const alreadyAllowlisted = allowlistedChannels.some(
-                channel => channel.channelId === channelInfo.channelId
-            );
+            const alreadyAllowlisted =
+                allowlistedChannels.some(
+                    channel =>
+                        channel.channelId === channelInfo.channelId
+                );
 
             if (alreadyAllowlisted) {
                 actionButton.setAttribute("disabled", "");
@@ -332,28 +445,11 @@ function updateAllowlistButton(channelInfo, actionButton) {
 }
 
 
-
-automaticAllowlistActionButton.addEventListener('click', () => {
-    addCurrentChannelToAllowlist(
-        currentAutomaticChannelInfo,
-        automaticAllowlistActionButton,
-        automaticDetectionBottom
-    );
-});
-
-
-
-manualAllowlistActionButton.addEventListener('click', () => {
-    addCurrentChannelToAllowlist(
-        currentManualChannelInfo,
-        manualAllowlistActionButton,
-        manualSectionBottom
-    );
-});
-
-
-
-function addCurrentChannelToAllowlist(channelInfo, actionButton, messageElement) {
+function addCurrentChannelToAllowlist(
+    channelInfo,
+    actionButton,
+    messageElement
+) {
     if (!channelInfo?.channelId) {
         return;
     }
@@ -366,18 +462,24 @@ function addCurrentChannelToAllowlist(channelInfo, actionButton, messageElement)
             channelIcon: channelInfo.channelIcon
         },
         (result) => {
+
             console.log(result);
+
             if (result === "quota-exceeded") {
                 messageElement.textContent =
                     "Allowlist is full. Remove a channel before adding another.";
+
                 messageElement.style.color = '#E06C75';
+
                 return;
             }
 
             if (result === "storage-error") {
                 messageElement.textContent =
                     "Failed to add channel. Please try again.";
+
                 messageElement.style.color = '#E06C75';
+
                 return;
             }
 
@@ -385,11 +487,12 @@ function addCurrentChannelToAllowlist(channelInfo, actionButton, messageElement)
                 return;
             }
 
-            const channelItem = createAllowlistedChannelItem(
-                channelInfo.channelId,
-                channelInfo.channelName,
-                channelInfo.channelIcon
-            );
+            const channelItem =
+                createAllowlistedChannelItem(
+                    channelInfo.channelId,
+                    channelInfo.channelName,
+                    channelInfo.channelIcon
+                );
 
             allowlistedChannelList.prepend(channelItem);
 
@@ -400,112 +503,16 @@ function addCurrentChannelToAllowlist(channelInfo, actionButton, messageElement)
 }
 
 
-
-
-
-
-function createAllowlistedChannelItem(channelId, channelName, channelIcon) {
-    const listItem = document.createElement("li");
-    listItem.className = "allowlisted-channel-item";
-
-    const channelInfo = document.createElement("div");
-    channelInfo.className = "allowlisted-channel-info";
-
-    const channelAvatar = document.createElement("div");
-    channelAvatar.className = "channel-avatar";
-
-    const image = document.createElement("img");
-    image.src = channelIcon;
-    image.alt = `${channelName} channel icon`;
-
-    const name = document.createElement("span");
-    name.className = "allowlisted-channel-name";
-    name.textContent = channelName;
-
-    const removeButton = document.createElement("button");
-    removeButton.type = "button";
-    removeButton.className = "remove-channel-btn";
-    removeButton.setAttribute(
-        "aria-label",
-        `Remove ${channelName} from allowlist`
-    );
-    removeButton.textContent = "Remove";
-
-    removeButton.addEventListener("click", () => {
-        removeChannelFromAllowlist(channelId, listItem);
-    });
-
-    channelAvatar.appendChild(image);
-    channelInfo.append(channelAvatar, name);
-    listItem.append(channelInfo, removeButton);
-
-    return listItem;
-}
-
-
-
-
-
-function removeChannelFromAllowlist(channelId, listItem) {
-    chrome.storage.sync.get(
-        "allowlistedChannels",
-        ({ allowlistedChannels = [] }) => {
-
-            const updatedChannels = allowlistedChannels.filter(
-                channel => channel.channelId !== channelId
-            );
-
-            chrome.storage.sync.set(
-                { allowlistedChannels: updatedChannels },
-                () => {
-                    if (chrome.runtime.lastError) {
-                        console.error(
-                            "Failed to remove channel:",
-                            chrome.runtime.lastError
-                        );
-                        return;
-                    }
-
-                    listItem.remove();
-
-                    if (currentAutomaticChannelInfo?.channelId === channelId) {
-                        automaticAllowlistActionButton.disabled = false;
-                        automaticAllowlistActionButton.textContent = "Add";
-                    }
-
-                    if (currentManualChannelInfo?.channelId === channelId) {
-                        manualAllowlistActionButton.disabled = false;
-                        manualAllowlistActionButton.textContent = "Add";
-                    }
-
-                    updateAllowlistCount();
-
-                    if(!automaticDetectionPaused) {
-                        automaticDetectionBottom.textContent = 'Automatic detection works on YouTube watch pages and channel pages.';
-                        automaticDetectionBottom.style.color = '#92929b';
-                    } else {
-                        manualSectionBottom.textContent = '';
-                        manualSectionBottom.style.color = '#92929b';
-                    }
-
-                }
-            );
-        }
-    );
-}
-
-
-
-
-
 function addChannelToAllowlist(channel, callback) {
     chrome.storage.sync.get(
         "allowlistedChannels",
         ({ allowlistedChannels = [] }) => {
 
-            const alreadyExists = allowlistedChannels.some(
-                item => item.channelId === channel.channelId
-            );
+            const alreadyExists =
+                allowlistedChannels.some(
+                    item =>
+                        item.channelId === channel.channelId
+                );
 
             if (alreadyExists) {
                 callback(false);
@@ -517,16 +524,25 @@ function addChannelToAllowlist(channel, callback) {
             chrome.storage.sync.set(
                 { allowlistedChannels },
                 () => {
+
                     if (chrome.runtime.lastError) {
-                        const errorMessage = chrome.runtime.lastError.message;
+                        const errorMessage =
+                            chrome.runtime.lastError.message;
+
                         console.log(errorMessage);
-                        if (errorMessage.includes("kQuotaBytesPerItem quota exceeded")) {
+
+                        if (
+                            errorMessage.includes(
+                                "kQuotaBytesPerItem quota exceeded"
+                            )
+                        ) {
                             callback("quota-exceeded");
                         } else {
                             console.error(
                                 "Failed to add channel:",
                                 chrome.runtime.lastError
                             );
+
                             callback("storage-error");
                         }
 
@@ -534,6 +550,7 @@ function addChannelToAllowlist(channel, callback) {
                     }
 
                     callback(true);
+
                     updateAllowlistCount();
                 }
             );
@@ -542,102 +559,274 @@ function addChannelToAllowlist(channel, callback) {
 }
 
 
+function removeChannelFromAllowlist(
+    channelId,
+    listItem
+) {
+    chrome.storage.sync.get(
+        "allowlistedChannels",
+        ({ allowlistedChannels = [] }) => {
 
+            const updatedChannels =
+                allowlistedChannels.filter(
+                    channel =>
+                        channel.channelId !== channelId
+                );
 
+            chrome.storage.sync.set(
+                {
+                    allowlistedChannels: updatedChannels
+                },
+                () => {
 
+                    if (chrome.runtime.lastError) {
+                        console.error(
+                            "Failed to remove channel:",
+                            chrome.runtime.lastError
+                        );
 
+                        return;
+                    }
 
-chrome.storage.sync.get(
-    "allowlistedChannels",
-    ({ allowlistedChannels = [] }) => {
-        allowlistedChannels.forEach(channel => {
-            const channelItem = createAllowlistedChannelItem(
-                channel.channelId,
-                channel.channelName,
-                channel.channelIcon
+                    listItem.remove();
+
+                    // Restore automatic Add button
+                    if (
+                        currentAutomaticChannelInfo?.channelId ===
+                        channelId
+                    ) {
+                        automaticAllowlistActionButton.disabled =
+                            false;
+
+                        automaticAllowlistActionButton.textContent =
+                            "Add";
+                    }
+
+                    // Restore manual Add button
+                    if (
+                        currentManualChannelInfo?.channelId ===
+                        channelId
+                    ) {
+                        manualAllowlistActionButton.disabled =
+                            false;
+
+                        manualAllowlistActionButton.textContent =
+                            "Add";
+                    }
+
+                    updateAllowlistCount();
+
+                    // Restore the appropriate bottom message
+                    if (!automaticDetectionPaused) {
+                        automaticDetectionBottom.textContent =
+                            'Automatic detection works on YouTube watch pages and channel pages.';
+
+                        automaticDetectionBottom.style.color =
+                            '#92929b';
+                    } else {
+                        manualSectionBottom.textContent = '';
+                        manualSectionBottom.style.color =
+                            '#92929b';
+                    }
+                }
             );
-
-            allowlistedChannelList.appendChild(channelItem);
-        });
-
-        allowlistedChannelCount.textContent = allowlistedChannels.length;
-    }
-);
+        }
+    );
+}
 
 
+function createAllowlistedChannelItem(
+    channelId,
+    channelName,
+    channelIcon
+) {
+    const listItem =
+        document.createElement("li");
 
+    listItem.className =
+        "allowlisted-channel-item";
+
+
+    const channelInfo =
+        document.createElement("div");
+
+    channelInfo.className =
+        "allowlisted-channel-info";
+
+
+    const channelAvatar =
+        document.createElement("div");
+
+    channelAvatar.className =
+        "channel-avatar";
+
+
+    const image =
+        document.createElement("img");
+
+    image.src = channelIcon;
+    image.alt =
+        `${channelName} channel icon`;
+
+
+    const name =
+        document.createElement("span");
+
+    name.className =
+        "allowlisted-channel-name";
+
+    name.textContent =
+        channelName;
+
+
+    const removeButton =
+        document.createElement("button");
+
+    removeButton.type = "button";
+
+    removeButton.className =
+        "remove-channel-btn";
+
+    removeButton.setAttribute(
+        "aria-label",
+        `Remove ${channelName} from allowlist`
+    );
+
+    removeButton.textContent =
+        "Remove";
+
+
+    removeButton.addEventListener(
+        "click",
+        () => {
+            removeChannelFromAllowlist(
+                channelId,
+                listItem
+            );
+        }
+    );
+
+
+    channelAvatar.appendChild(image);
+
+    channelInfo.append(
+        channelAvatar,
+        name
+    );
+
+    listItem.append(
+        channelInfo,
+        removeButton
+    );
+
+
+    return listItem;
+}
 
 
 function updateAllowlistCount() {
     chrome.storage.sync.get(
         "allowlistedChannels",
         ({ allowlistedChannels = [] }) => {
-            allowlistedChannelCount.textContent = allowlistedChannels.length;
+            allowlistedChannelCount.textContent =
+                allowlistedChannels.length;
         }
     );
 }
 
 
+// ============================================================
+// MANUAL DETECTION
+// ============================================================
+
+manualForm.addEventListener(
+    'submit',
+    async (event) => {
+        event.preventDefault();
+
+        const manualInputUrl =
+            manualInput.value.trim();
+
+        const urlType =
+            getYouTubeUrlType(manualInputUrl);
 
 
+        // Invalid URL
+        if (
+            urlType !== "watch" &&
+            urlType !== "channel"
+        ) {
+            console.log("Invalid YouTube URL");
+            return;
+        }
 
 
+        // Start manual detection
+        manualSectionBottom.textContent =
+            'Finding Channel...';
+
+        manualSectionBottom.style.color =
+            '#92929b';
+
+        manualFindButton.textContent =
+            'Finding';
+
+        manualChannelCard.style.display =
+            'none';
 
 
-const manualForm = document.querySelector('.manual-detection-form');
+        isManualDetectionActive =
+            true;
 
-const automaticDetectionHeader = document.querySelector('.automatic-detection-header');
-const automaticDetectionCard = document.querySelector('.automatic-detection-card');
+        automaticDetectionPaused =
+            true;
 
-manualForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
 
-    const manualInputUrl = manualInput.value.trim();
-    const urlType = getYouTubeUrlType(manualInputUrl);
-    if(urlType) {
-        manualSectionBottom.textContent = 'Finding Channel...';
-        manualFindButton.textContent = 'Finding';
+        // Reset automatic detection UI
+        resetAutomaticDetectionUI();
+
+        setAutomaticDetectionPaused(true);
+
+
+        // Navigate active tab
+        const [tab] =
+            await chrome.tabs.query({
+                active: true,
+                currentWindow: true
+            });
+
+        await chrome.tabs.update(
+            tab.id,
+            {
+                url: manualInputUrl
+            }
+        );
     }
-
-    if (urlType !== "watch" && urlType !== "channel") {
-        console.log("Invalid YouTube URL");
-        return;
-    }
-
-    // Manual detection has started
-    isManualDetectionActive = true;
-    automaticDetectionPaused = true;
-
-    resetAutomaticDetectionUI();
-    setAutomaticDetectionPaused(true);
-
-    const [tab] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true
-    });
-
-    await chrome.tabs.update(tab.id, {
-        url: manualInputUrl
-    });
-
-});
-
+);
 
 
 function getYouTubeUrlType(input) {
     try {
-        const url = new URL(input.trim());
+        const url =
+            new URL(input.trim());
+
 
         // Must be YouTube
         if (
             url.protocol !== "https:" ||
-            !["www.youtube.com", "youtube.com"].includes(url.hostname)
+            ![
+                "www.youtube.com",
+                "youtube.com"
+            ].includes(url.hostname)
         ) {
             return null;
         }
 
+
         // Watch page
-        const videoId = url.searchParams.get("v");
+        const videoId =
+            url.searchParams.get("v");
+
         if (
             url.pathname === "/watch" &&
             videoId &&
@@ -646,12 +835,17 @@ function getYouTubeUrlType(input) {
             return "watch";
         }
 
+
         // Handle-based channel page
-        const match = url.pathname.match(/^\/@([\w.-]+)(?:\/[\w.-]+)?$/);
+        const match =
+            url.pathname.match(
+                /^\/@([\w.-]+)(?:\/[\w.-]+)?$/
+            );
 
         if (match) {
             return "channel";
         }
+
 
         return null;
 
@@ -661,25 +855,50 @@ function getYouTubeUrlType(input) {
 }
 
 
+// ============================================================
+// AUTOMATIC DETECTION UI
+// ============================================================
+
 function setAutomaticDetectionPaused(paused) {
-    automaticDetectionHeader.classList.toggle('is-disabled', paused);
-    automaticDetectionCard.classList.toggle('is-disabled', paused);
-    automaticDetectionBottom.style.color = "#92929b";
+    automaticDetectionHeader.classList.toggle(
+        'is-disabled',
+        paused
+    );
+
+    automaticDetectionCard.classList.toggle(
+        'is-disabled',
+        paused
+    );
+
+    automaticDetectionBottom.style.color =
+        "#92929b";
+
 
     if (paused) {
-        automaticDetectionBottom.textContent = 'Automatic detection paused';
+        automaticDetectionBottom.textContent =
+            'Automatic detection paused';
     } else {
-        automaticDetectionBottom.textContent = 'Automatic detection works on YouTube watch pages and channel pages.';
+        automaticDetectionBottom.textContent =
+            'Automatic detection works on YouTube watch pages and channel pages.';
     }
 }
 
 
 function resetAutomaticDetectionUI() {
-    channelName.textContent = "—";
-    channelDetectionStatus.textContent = "No channel detected";
-    channelIconImage.src = chrome.runtime.getURL(
-        "assets/icons/allowlist/default-channel-icon.svg"
-    );
-    automaticAllowlistActionButton.disabled = true;
-    automaticAllowlistActionButton.textContent = "Add";
+    channelName.textContent =
+        "—";
+
+    channelDetectionStatus.textContent =
+        "No channel detected";
+
+    channelIconImage.src =
+        chrome.runtime.getURL(
+            "assets/icons/allowlist/default-channel-icon.svg"
+        );
+
+    automaticAllowlistActionButton.disabled =
+        true;
+
+    automaticAllowlistActionButton.textContent =
+        "Add";
 }
