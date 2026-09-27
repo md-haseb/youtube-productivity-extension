@@ -44,6 +44,7 @@ async function handleNavigation() {
 
         try {
             // 1. Primary: ytd-app
+            console.log('hello1');
             const channelInfo = await waitForChannelInfoFromAppData();
 
             console.log("Channel info from ytd-app:", channelInfo);
@@ -52,6 +53,7 @@ async function handleNavigation() {
 
             try {
                 // 2. fallback: DOM
+                console.log('hello2');
                 const channelInfo = await waitForChannelInfoFromChannelPageDOM();
 
                 console.log("Channel info from DOM:", channelInfo);
@@ -384,20 +386,25 @@ function extractChannelInfoFromAppData() {
 
         const browseEndpoint =
             app?.data?.endpoint?.browseEndpoint;
+        // console.log(browseEndpoint);
 
         if (!browseEndpoint) {
+            // console.log('hello1');
             return null;
         }
 
         const { browseId, canonicalBaseUrl } = browseEndpoint;
+        // console.log(browseId, canonicalBaseUrl);
 
         if (!browseId || !canonicalBaseUrl) {
+            // console.log('hello2');
             return null;
         }
 
         const metadata = app?.data?.response?.metadata;
 
         if(!metadata) {
+            // console.log('hello3');
             return null;
         }
 
@@ -413,7 +420,8 @@ function extractChannelInfoFromAppData() {
             channelHandle: canonicalBaseUrl,
             channelIcon: channelIcon
         };
-    } catch {
+    } catch(error) {
+        // console.log(error);
         return null;
     }
 }
@@ -426,14 +434,22 @@ function extractChannelInfoFromAppData() {
 
 // Fallback method for extracting channel info from the channel page DOM.
 function extractChannelInfoFromChannelPageDOM() {
-    const channelIdLink = document.querySelector(
-        'ytd-video-description-infocards-section-renderer ytd-button-renderer yt-button-shape a[href^="/channel/"][href$="/about"]'
+    // const channelIdLink = document.querySelector(
+    //     'ytd-video-description-infocards-section-renderer ytd-button-renderer yt-button-shape a[href^="/channel/"][href$="/about"]'
+    // );
+
+    // const href = channelIdLink?.getAttribute("href");
+
+    // const channelId = href
+    //     ?.match(/^\/channel\/([^/?]+)/)?.[1];
+    const canonicalLink = document.querySelector(
+        'link[rel="canonical"]'
     );
 
-    const href = channelIdLink?.getAttribute("href");
+    const canonicalHref = canonicalLink?.getAttribute('href');
 
-    const channelId = href
-        ?.match(/^\/channel\/([^/?]+)/)?.[1];
+    const channelId =
+        canonicalHref?.match(/\/channel\/([^/?]+)/)?.[1] || null;
 
     const channelNameElement = document.querySelector('tp-yt-app-header yt-page-header-renderer .ytPageHeaderViewModelTitle span');
     const channelName = channelNameElement?.textContent?.trim() || null;
@@ -441,10 +457,15 @@ function extractChannelInfoFromChannelPageDOM() {
     const channelIconElement = document.querySelector('tp-yt-app-header yt-page-header-renderer .ytPageHeaderViewModelHeadlineImage img');
     const channelIcon = channelIconElement?.getAttribute('src') || null;
 
+    const channelHandle = extractYouTubeHandle();
+
+    console.log(channelId, channelName, channelHandle);
+
     return {
         channelId,
         channelName,
-        channelIcon
+        channelIcon,
+        channelHandle
     };
 }
 
@@ -458,16 +479,17 @@ async function waitForChannelInfoFromChannelPageDOM() {
     }
 
     const handle = `/${youtubeHandle}`;
+    console.log(handle);
 
     return new Promise((resolve, reject) => {
         let timeout;
 
         const checkChannel = () => {
-            const link = document.querySelector(
-                'ytd-video-description-infocards-section-renderer a#header'
-            );
+            // const link = document.querySelector(
+            //     'ytd-video-description-infocards-section-renderer a#header'
+            // );
 
-            const domHandle = link?.getAttribute('href');
+            // const domHandle = link?.getAttribute('href');
 
             const appHeaderElement = document.querySelector(
                 'tp-yt-app-header yt-page-header-renderer yt-content-metadata-view-model .ytAttributedStringHost span'
@@ -480,7 +502,9 @@ async function waitForChannelInfoFromChannelPageDOM() {
                     ? `/${handleText}`
                     : null;
 
-            if (domHandle === handle && handleFromAppHeader === handle) {
+            console.log(handle, handleFromAppHeader);
+            //if (domHandle === handle && handleFromAppHeader === handle)
+            if (handleFromAppHeader === handle) {
                 const channelInfo = extractChannelInfoFromChannelPageDOM();
 
                 if (

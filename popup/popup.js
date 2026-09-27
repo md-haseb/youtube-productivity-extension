@@ -328,7 +328,9 @@ chrome.storage.sync.get(
 // ============================================================
 
 chrome.runtime.onMessage.addListener((message) => {
+    console.log('hello1');
     if (message.type !== "CHANNEL_INFO") {
+        console.log('hello2');
         return;
     }
 
@@ -749,7 +751,6 @@ manualForm.addEventListener(
 
         const urlType =
             getYouTubeUrlType(manualInputUrl);
-
 
         // Invalid URL
         if (
