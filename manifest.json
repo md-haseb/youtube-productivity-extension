@@ -29,7 +29,11 @@
   "content_scripts": [
     {
       "matches": ["https://www.youtube.com/*"],
-      "js": ["content/page-script.js"],
+      "js": [
+        "content/channel-detector.js",
+        "content/home-feed-filter.js",
+        "content/page-script.js"
+      ],
       "world": "MAIN",
       "run_at": "document_idle"
     },
