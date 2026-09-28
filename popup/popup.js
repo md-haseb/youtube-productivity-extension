@@ -168,28 +168,115 @@ supportBackBtn.addEventListener("click", () => {
 
 
 
-//page navigation
+
+
+
+// =========================================================
+// Page navigation
+// =========================================================
 
 const navItems = document.querySelectorAll(".nav-item");
 const pageSlider = document.querySelector(".page-slider");
 
+const pagePositions = {
+  home: "translateX(0)",
+  allowlist: "translateX(-33.333333%)",
+  schedule: "translateX(-66.666667%)"
+};
+
 navItems.forEach((item) => {
+
   item.addEventListener("click", () => {
+
     const page = item.dataset.page;
 
+    // Update active navigation item
     navItems.forEach((nav) => {
       nav.classList.remove("active");
     });
 
     item.classList.add("active");
 
-    if (page === "home") {
-      pageSlider.style.transform = "translateX(0)";
-    } else if (page === "allowlist") {
-      pageSlider.style.transform = "translateX(-50%)";
+    // Move page slider
+    if (pagePositions[page]) {
+      pageSlider.style.transform = pagePositions[page];
     }
+
   });
+
 });
+
+
+
+// =========================================================
+// Focus session duration selection
+// =========================================================
+
+const durationOptions = document.querySelectorAll(
+  ".focus-duration-option"
+);
+
+let selectedFocusDuration = 10;
+
+durationOptions.forEach((option) => {
+
+  option.addEventListener("click", () => {
+
+    // Remove selection from all options
+    durationOptions.forEach((item) => {
+      item.classList.remove("selected");
+    });
+
+    // Select clicked option
+    option.classList.add("selected");
+
+    // Store selected duration
+    selectedFocusDuration = Number(
+      option.dataset.duration
+    );
+
+  });
+
+});
+
+
+
+const startFocusButton = document.querySelector(
+  ".start-focus-btn"
+);
+
+startFocusButton.addEventListener("click", () => {
+
+  console.log(
+    `Starting ${selectedFocusDuration}-minute focus session`
+  );
+
+});
+
+
+
+//page navigation
+
+// const navItems = document.querySelectorAll(".nav-item");
+// const pageSlider = document.querySelector(".page-slider");
+
+// navItems.forEach((item) => {
+//   item.addEventListener("click", () => {
+//     const page = item.dataset.page;
+
+//     navItems.forEach((nav) => {
+//       nav.classList.remove("active");
+//     });
+
+//     item.classList.add("active");
+
+//     if (page === "home") {
+//       pageSlider.style.transform = "translateX(0)";
+//     } else if (page === "allowlist") {
+//       pageSlider.style.transform = "translateX(-50%)";
+//     }
+//   });
+// });
 
 
 
