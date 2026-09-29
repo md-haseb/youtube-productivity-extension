@@ -1240,6 +1240,17 @@ body {
 /* =========================================================
    Header
    ========================================================= */
+.schedule-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.schedule-countdown {
+  font-size: 14px;
+  color: #242590;
+  display: none;
+}
 
 .schedule-header {
   padding-top: 0;

@@ -216,7 +216,11 @@ const durationOptions = document.querySelectorAll(
   ".focus-duration-option"
 );
 
-let selectedFocusDuration = 10;
+let selectedFocusDuration = 1;
+
+let breakUntil = null;
+
+let countdownInterval = null;
 
 durationOptions.forEach((option) => {
 
@@ -245,13 +249,182 @@ const startFocusButton = document.querySelector(
   ".start-focus-btn"
 );
 
-startFocusButton.addEventListener("click", () => {
+const startFocusBtnText = document.querySelector(
+    ".start-focus-btn-text"
+);
 
-  console.log(
-    `Starting ${selectedFocusDuration}-minute focus session`
-  );
+const countdownElement = document.querySelector(
+    ".schedule-countdown"
+);
 
+startFocusButton.addEventListener("click", async () => {
+    if (breakUntil && Date.now() < breakUntil) {
+        // Stop current focus session
+        await stopFocusSession(true);
+    } else {
+        // Start a new focus session
+        await startFocusSession();
+    }
 });
+
+// async function startFocusSession() {
+//     breakUntil = Date.now() + selectedFocusDuration * 60 * 1000;
+
+//     countdownElement.style.display = "";
+//     const remaining = breakUntil - Date.now();
+//     setInterval(updateCountdown, 1000);
+
+
+//     await chrome.storage.sync.set({
+//         breakUntil,
+//         previousSettings: { ...settings }
+//     });
+
+//     Object.keys(settings).forEach((key) => {
+//         if (key !== "extensionEnabled") {
+//             settings[key] = false;
+//         }
+//     });
+
+//     await chrome.storage.sync.set({ settings });
+
+//     sendMessage("RESTORE_ALL_FEATURES", false);
+
+//     startFocusBtnText.textContent = "Stop Focus Session";
+
+//     setTimeout(() => {
+//         stopFocusSession();
+//     }, remaining);
+// }
+
+async function startFocusSession() {
+    breakUntil = Date.now() + selectedFocusDuration * 60 * 1000;
+
+    countdownElement.style.display = "block";
+
+    clearInterval(countdownInterval);
+    countdownInterval = setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    await chrome.storage.sync.set({
+        breakUntil,
+        previousSettings: { ...settings }
+    });
+
+    Object.keys(settings).forEach((key) => {
+        if (key !== "extensionEnabled") {
+            settings[key] = false;
+        }
+    });
+
+    await chrome.storage.sync.set({ settings });
+
+    sendMessage("RESTORE_ALL_FEATURES", false);
+
+    startFocusBtnText.textContent = "Stop Focus Session";
+
+    const remaining = breakUntil - Date.now();
+
+    setTimeout(() => {
+        stopFocusSession();
+    }, remaining);
+}
+
+// async function stopFocusSession() {
+//     const result = await chrome.storage.sync.get([
+//         "breakUntil",
+//         "previousSettings"
+//     ]);
+
+//     if (!result.breakUntil || Date.now() < result.breakUntil) {
+//         return;
+//     }
+
+//     Object.assign(settings, result.previousSettings);
+
+//     await chrome.storage.sync.set({
+//         breakUntil: null,
+//         settings
+//     });
+
+//     sendMessage("APPLY_ALL_FEATURES", settings);
+
+//     startFocusBtnText.textContent = "Start Focus Session";
+// }
+
+async function stopFocusSession(manual = false) {
+    const result = await chrome.storage.sync.get([
+        "breakUntil",
+        "previousSettings"
+    ]);
+
+    if (!manual && (!result.breakUntil || Date.now() < result.breakUntil)) {
+        return;
+    }
+
+    Object.assign(settings, result.previousSettings);
+
+    breakUntil = null;
+
+    await chrome.storage.sync.set({
+        breakUntil: null,
+        settings
+    });
+
+    sendMessage("APPLY_ALL_FEATURES", settings);
+
+    startFocusBtnText.textContent = "Start Focus Session";
+
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+    countdownElement.style.display = "none";
+}
+
+function updateCountdown() {
+    const remaining = breakUntil - Date.now();
+
+    if (remaining <= 0) {
+        countdownElement.textContent = "00:00";
+        clearInterval(countdownInterval);
+        return;
+    }
+
+    const totalSeconds = Math.ceil(remaining / 1000);
+
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    countdownElement.textContent =
+        `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+// const countdownInterval = setInterval(updateCountdown, 1000);
+
+// startFocusButton.addEventListener("click", async () => {
+
+//     console.log(
+//         `Starting ${selectedFocusDuration}-minute focus session`
+//     );
+
+//     breakUntil = Date.now() + selectedFocusDuration * 60 * 1000; 
+
+//     await chrome.storage.sync.set({
+//         breakUntil,
+//         previousSettings: { ...settings }
+//     });
+
+//     // Temporarily disable all features
+//     Object.keys(settings).forEach((key) => {
+//         if (key !== "extensionEnabled") {
+//             settings[key] = false;
+//         }
+//     });
+//     await chrome.storage.sync.set({ settings });
+
+
+//     sendMessage("RESTORE_ALL_FEATURES", false);
+
+// });
 
 
 
@@ -291,6 +464,7 @@ startFocusButton.addEventListener("click", () => {
 // ============================================================
 
 // Automatic detection
+
 const channelName =
     document.querySelector('.channel-label');
 
