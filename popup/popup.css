@@ -1431,8 +1431,8 @@ body {
    ========================================================= */
 
 .start-focus-icon {
-  width: 19px;
-  height: 19px;
+  width: 18px;
+  height: 18px;
 
   display: flex;
   align-items: center;
@@ -1440,9 +1440,10 @@ body {
 }
 
 .start-focus-icon img {
-  width: 19px;
-  height: 19px;
+  width: 18px;
+  height: 18px;
 }
+
 
 
 /* =========================================================
@@ -1476,8 +1477,8 @@ body {
    ========================================================= */
 
 .focus-info-icon {
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
 
   flex: 0 0 20px;
 
@@ -1501,7 +1502,8 @@ body {
 .focus-info-card p {
   margin: 0;
 
-  color: #242590;
+  /* color: #242590; */
+  color: #73737d;
 
   font-size: 13px;
   font-weight: 400;
