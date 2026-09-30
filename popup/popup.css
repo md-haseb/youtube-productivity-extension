@@ -1363,6 +1363,10 @@ body {
   color: #242590;
 }
 
+.focus-duration-option:disabled { 
+  opacity: 0.5; 
+  cursor: not-allowed; 
+}
 
 /* =========================================================
    Duration Icon

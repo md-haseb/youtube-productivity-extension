@@ -41,16 +41,28 @@ extensionToggle.addEventListener('change', handleExtensionToggle);
 
 
 //settings
-function loadSettings() {
-  chrome.storage.sync.get(settings, (result) => {
+async function loadSettings() {
+    const result = await chrome.storage.sync.get(settings);
+
     Object.assign(settings, result);
 
     extensionToggle.checked = settings.extensionEnabled;
 
     updatePopupState(settings.extensionEnabled);
     loadFeatureToggleStates();
-  });
+    await restoreFocusSession();
 }
+// async function loadSettings() {
+//   chrome.storage.sync.get(settings, async (result) => {
+//     Object.assign(settings, result);
+
+//     extensionToggle.checked = settings.extensionEnabled;
+
+//     updatePopupState(settings.extensionEnabled);
+//     loadFeatureToggleStates();
+//     await restoreFocusSession();
+//   });
+// }
 
 function loadFeatureToggleStates() {
   toggles.forEach((toggle) => {
@@ -212,71 +224,83 @@ navItems.forEach((item) => {
 // Focus session duration selection
 // =========================================================
 
-const durationOptions = document.querySelectorAll(
-  ".focus-duration-option"
-);
+// const durationOptions = document.querySelectorAll(
+//   ".focus-duration-option"
+// );
 
-let selectedFocusDuration = 1;
+// const firstDurationOption = document.querySelector(
+//     ".focus-duration-option"
+// );
 
-let breakUntil = null;
+// let selectedFocusDuration = 1;
 
-let countdownInterval = null;
+// let selectedFocusDurationElm = firstDurationOption;
 
-durationOptions.forEach((option) => {
+// let breakUntil = null;
 
-  option.addEventListener("click", () => {
+// let countdownInterval = null;
 
-    // Remove selection from all options
-    durationOptions.forEach((item) => {
-      item.classList.remove("selected");
-    });
+// durationOptions.forEach((option) => {
 
-    // Select clicked option
-    option.classList.add("selected");
+//   option.addEventListener("click", () => {
 
-    // Store selected duration
-    selectedFocusDuration = Number(
-      option.dataset.duration
-    );
+//     if(!breakUntil) {
+//         // Remove selection from all options
+//         durationOptions.forEach((item) => {
+//             item.classList.remove("selected");
+//         });
 
-  });
+//         // Select clicked option
+//         option.classList.add("selected");
+//         selectedFocusDurationElm = option;
 
-});
+//         // Store selected duration
+//         selectedFocusDuration = Number(
+//         option.dataset.duration
+//         );
+//     } 
+
+//   });
+
+// });
 
 
 
-const startFocusButton = document.querySelector(
-  ".start-focus-btn"
-);
+// const startFocusButton = document.querySelector(
+//   ".start-focus-btn"
+// );
 
-const startFocusBtnText = document.querySelector(
-    ".start-focus-btn-text"
-);
+// const startFocusBtnText = document.querySelector(
+//     ".start-focus-btn-text"
+// );
 
-const countdownElement = document.querySelector(
-    ".schedule-countdown"
-);
+// const countdownElement = document.querySelector(
+//     ".schedule-countdown"
+// );
 
-startFocusButton.addEventListener("click", async () => {
-    if (breakUntil && Date.now() < breakUntil) {
-        // Stop current focus session
-        await stopFocusSession(true);
-    } else {
-        // Start a new focus session
-        await startFocusSession();
-    }
-});
+// startFocusButton.addEventListener("click", async () => {
+//     if (breakUntil && Date.now() < breakUntil) {
+//         // Stop current focus session
+//         await stopFocusSession(true);
+//     } else {
+//         // Start a new focus session
+//         await startFocusSession();
+//     }
+// });
+
 
 // async function startFocusSession() {
 //     breakUntil = Date.now() + selectedFocusDuration * 60 * 1000;
 
-//     countdownElement.style.display = "";
-//     const remaining = breakUntil - Date.now();
-//     setInterval(updateCountdown, 1000);
+//     countdownElement.style.display = "block";
 
+//     clearInterval(countdownInterval);
+//     countdownInterval = setInterval(updateCountdown, 1000);
+//     updateCountdown();
 
 //     await chrome.storage.sync.set({
 //         breakUntil,
+//         selectedFocusDuration,
 //         previousSettings: { ...settings }
 //     });
 
@@ -292,22 +316,195 @@ startFocusButton.addEventListener("click", async () => {
 
 //     startFocusBtnText.textContent = "Stop Focus Session";
 
+//     durationOptions.forEach((option) => {
+
+//             if(!option.classList.contains('selected')) {
+//                 option.classList.add('is-disabled');
+//             }
+//     });
+
+//     const remaining = breakUntil - Date.now();
+
 //     setTimeout(() => {
 //         stopFocusSession();
 //     }, remaining);
 // }
 
+
+// async function stopFocusSession(manual = false) {
+//     const result = await chrome.storage.sync.get([
+//         "breakUntil",
+//         "previousSettings"
+//     ]);
+
+//     if (!manual && (!result.breakUntil || Date.now() < result.breakUntil)) {
+//         return;
+//     }
+
+//     Object.assign(settings, result.previousSettings);
+
+//     breakUntil = null;
+
+//     await chrome.storage.sync.set({
+//         breakUntil: null,
+//         settings
+//     });
+
+//     sendMessage("APPLY_ALL_FEATURES", settings);
+
+//     startFocusBtnText.textContent = "Start Focus Session";
+
+//     clearInterval(countdownInterval);
+//     countdownInterval = null;
+//     countdownElement.style.display = "none";
+
+//     durationOptions.forEach((option) => {
+
+//             if(!option.classList.contains('selected')) {
+//                 option.classList.remove('is-disabled');
+//             }
+//     });
+// }
+
+// function updateCountdown() {
+//     const remaining = breakUntil - Date.now();
+
+//     if (remaining <= 0) {
+//         countdownElement.textContent = "00:00";
+//         clearInterval(countdownInterval);
+//         return;
+//     }
+
+//     const totalSeconds = Math.ceil(remaining / 1000);
+
+//     const minutes = Math.floor(totalSeconds / 60);
+//     const seconds = totalSeconds % 60;
+
+//     countdownElement.textContent =
+//         `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+// }
+
+// async function restoreFocusSession() {
+//     const result = await chrome.storage.sync.get([
+//         "breakUntil",
+//         "selectedFocusDuration"
+//     ]);
+
+//     breakUntil = result.breakUntil;
+//     selectedFocusDuration = result.selectedFocusDuration;
+
+
+//     if (!breakUntil) {
+//         return;
+//     }
+
+//     const selectedOption = document.querySelector(
+//         `.focus-duration-option[data-duration="${selectedFocusDuration}"]`
+//     );
+
+//     durationOptions.forEach((option) => {
+//         option.classList.remove("selected");
+//         option.classList.add("is-disabled");
+//     });
+
+//     if (selectedOption) {
+//         selectedOption.classList.add("selected");
+//         selectedOption.classList.remove("is-disabled");
+
+//         selectedFocusDurationElm = selectedOption;
+//     }
+
+//     const remaining = breakUntil - Date.now();
+
+//     if (remaining <= 0) {
+//         await stopFocusSession();
+//         return;
+//     }
+
+//     // Session is still running
+//     countdownElement.style.display = "block";
+
+//     durationOptions.forEach((option) => {
+
+//         if(!option.classList.contains('selected')) {
+//             option.classList.add('is-disabled');
+//         }
+//     });
+
+//     startFocusBtnText.textContent = "Stop Focus Session";
+
+//     clearInterval(countdownInterval);
+//     countdownInterval = setInterval(updateCountdown, 1000);
+
+//     updateCountdown();
+// }
+
+
+
+
+const durationOptions = document.querySelectorAll(
+    ".focus-duration-option"
+);
+
+const startFocusButton = document.querySelector(
+    ".start-focus-btn"
+);
+
+const startFocusBtnText = document.querySelector(
+    ".start-focus-btn-text"
+);
+
+const countdownElement = document.querySelector(
+    ".schedule-countdown"
+);
+
+let selectedFocusDuration = 1;
+let breakUntil = null;
+let countdownInterval = null;
+
+
+// ============================================================
+// DURATION SELECTION
+// ============================================================
+
+durationOptions.forEach((option) => {
+    option.addEventListener("click", () => {
+        if (breakUntil) {
+            return;
+        }
+
+        durationOptions.forEach((item) => {
+            item.classList.remove("selected");
+        });
+
+        option.classList.add("selected");
+
+        selectedFocusDuration = Number(
+            option.dataset.duration
+        );
+    });
+});
+
+
+// ============================================================
+// FOCUS SESSION
+// ============================================================
+
+startFocusButton.addEventListener("click", async () => {
+    if (breakUntil && Date.now() < breakUntil) {
+        await stopFocusSession(true);
+    } else {
+        await startFocusSession();
+    }
+});
+
 async function startFocusSession() {
-    breakUntil = Date.now() + selectedFocusDuration * 60 * 1000;
-
-    countdownElement.style.display = "block";
-
-    clearInterval(countdownInterval);
-    countdownInterval = setInterval(updateCountdown, 1000);
-    updateCountdown();
+    breakUntil =
+        Date.now() + selectedFocusDuration * 60 * 1000;
 
     await chrome.storage.sync.set({
         breakUntil,
+        selectedFocusDuration,
         previousSettings: { ...settings }
     });
 
@@ -321,7 +518,16 @@ async function startFocusSession() {
 
     sendMessage("RESTORE_ALL_FEATURES", false);
 
+    countdownElement.style.display = "block";
+
     startFocusBtnText.textContent = "Stop Focus Session";
+
+    setDurationOptionsDisabled(true);
+
+    clearInterval(countdownInterval);
+    countdownInterval = setInterval(updateCountdown, 1000);
+
+    updateCountdown();
 
     const remaining = breakUntil - Date.now();
 
@@ -330,35 +536,16 @@ async function startFocusSession() {
     }, remaining);
 }
 
-// async function stopFocusSession() {
-//     const result = await chrome.storage.sync.get([
-//         "breakUntil",
-//         "previousSettings"
-//     ]);
-
-//     if (!result.breakUntil || Date.now() < result.breakUntil) {
-//         return;
-//     }
-
-//     Object.assign(settings, result.previousSettings);
-
-//     await chrome.storage.sync.set({
-//         breakUntil: null,
-//         settings
-//     });
-
-//     sendMessage("APPLY_ALL_FEATURES", settings);
-
-//     startFocusBtnText.textContent = "Start Focus Session";
-// }
-
 async function stopFocusSession(manual = false) {
     const result = await chrome.storage.sync.get([
         "breakUntil",
         "previousSettings"
     ]);
 
-    if (!manual && (!result.breakUntil || Date.now() < result.breakUntil)) {
+    if (
+        !manual &&
+        (!result.breakUntil || Date.now() < result.breakUntil)
+    ) {
         return;
     }
 
@@ -377,8 +564,16 @@ async function stopFocusSession(manual = false) {
 
     clearInterval(countdownInterval);
     countdownInterval = null;
+
     countdownElement.style.display = "none";
+
+    setDurationOptionsDisabled(false);
 }
+
+
+// ============================================================
+// COUNTDOWN
+// ============================================================
 
 function updateCountdown() {
     const remaining = breakUntil - Date.now();
@@ -386,6 +581,7 @@ function updateCountdown() {
     if (remaining <= 0) {
         countdownElement.textContent = "00:00";
         clearInterval(countdownInterval);
+        countdownInterval = null;
         return;
     }
 
@@ -398,58 +594,77 @@ function updateCountdown() {
         `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-// const countdownInterval = setInterval(updateCountdown, 1000);
 
-// startFocusButton.addEventListener("click", async () => {
+// ============================================================
+// SESSION RESTORATION
+// ============================================================
 
-//     console.log(
-//         `Starting ${selectedFocusDuration}-minute focus session`
-//     );
+async function restoreFocusSession() {
+    const result = await chrome.storage.sync.get([
+        "breakUntil",
+        "selectedFocusDuration"
+    ]);
 
-//     breakUntil = Date.now() + selectedFocusDuration * 60 * 1000; 
+    breakUntil = result.breakUntil;
 
-//     await chrome.storage.sync.set({
-//         breakUntil,
-//         previousSettings: { ...settings }
-//     });
+    if (!breakUntil) {
+        return;
+    }
 
-//     // Temporarily disable all features
-//     Object.keys(settings).forEach((key) => {
-//         if (key !== "extensionEnabled") {
-//             settings[key] = false;
-//         }
-//     });
-//     await chrome.storage.sync.set({ settings });
+    selectedFocusDuration = result.selectedFocusDuration;
+
+    const remaining = breakUntil - Date.now();
+
+    if (remaining <= 0) {
+        await stopFocusSession();
+        return;
+    }
+
+    const selectedOption = document.querySelector(
+        `.focus-duration-option[data-duration="${selectedFocusDuration}"]`
+    );
+
+    durationOptions.forEach((option) => {
+        option.classList.remove("selected");
+    });
+
+    if (selectedOption) {
+        selectedOption.classList.add("selected");
+    }
+
+    countdownElement.style.display = "block";
+
+    startFocusBtnText.textContent = "Stop Focus Session";
+
+    setDurationOptionsDisabled(true);
+
+    clearInterval(countdownInterval);
+    countdownInterval = setInterval(updateCountdown, 1000);
+
+    updateCountdown();
+}
 
 
-//     sendMessage("RESTORE_ALL_FEATURES", false);
+// ============================================================
+// UI HELPERS
+// ============================================================
 
-// });
+function setDurationOptionsDisabled(disabled) {
+    durationOptions.forEach((option) => {
+        // option.disabled = disabled;
+        if(!option.classList.contains('selected')) {
+            option.disabled = disabled;
+        }
 
+            // durationOptions.forEach((option) => {
 
+            //         if(!option.classList.contains('selected')) {
+            //             option.classList.add('is-disabled');
+            //         }
+            // });
+    });
+}
 
-//page navigation
-
-// const navItems = document.querySelectorAll(".nav-item");
-// const pageSlider = document.querySelector(".page-slider");
-
-// navItems.forEach((item) => {
-//   item.addEventListener("click", () => {
-//     const page = item.dataset.page;
-
-//     navItems.forEach((nav) => {
-//       nav.classList.remove("active");
-//     });
-
-//     item.classList.add("active");
-
-//     if (page === "home") {
-//       pageSlider.style.transform = "translateX(0)";
-//     } else if (page === "allowlist") {
-//       pageSlider.style.transform = "translateX(-50%)";
-//     }
-//   });
-// });
 
 
 
