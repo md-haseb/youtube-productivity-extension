@@ -70,9 +70,24 @@ chrome.runtime.onMessage.addListener((message) => {
       break;
 
     case "APPLY_ALL_FEATURES":
-      settings.extensionEnabled = message.enabled;
-      applyAllFeatures();
-      startMutationObserver(settings);
+      // settings.extensionEnabled = message.enabled;
+      // applyAllFeatures();
+      // startMutationObserver(settings);
+      // break;
+      console.log("APPLY_ALL_FEATURES received");
+      console.log("message.enabled:", message.enabled);
+      chrome.storage.sync.get("settings", (result) => {
+          console.log("Settings from storage:", result.settings);
+          // settings = result.settings;
+          Object.assign(settings, result.settings);
+          console.log("Final settings:", settings, settings.extensionEnabled);
+          settings.extensionEnabled = message.enabled;
+
+          console.log("Final settings:", settings);
+
+          applyAllFeatures();
+          startMutationObserver(settings);
+      });
       break;
 
     // case "hideHomeFeed":

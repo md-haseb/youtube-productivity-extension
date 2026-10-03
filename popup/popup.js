@@ -516,7 +516,7 @@ async function startFocusSession() {
 
     await chrome.storage.sync.set({ settings });
 
-    sendMessage("RESTORE_ALL_FEATURES", false);
+    sendMessage("RESTORE_ALL_FEATURES", true);
 
     countdownElement.style.display = "block";
 
@@ -529,18 +529,24 @@ async function startFocusSession() {
 
     updateCountdown();
 
-    const remaining = breakUntil - Date.now();
+    chrome.runtime.sendMessage({
+        type: "START_FOCUS_SESSION"
+    });
 
-    setTimeout(() => {
-        stopFocusSession();
-    }, remaining);
+    // const remaining = breakUntil - Date.now();
+
+    // setTimeout(() => {
+    //     stopFocusSession();
+    // }, remaining);
 }
 
 async function stopFocusSession(manual = false) {
+    console.log('hello1');
     const result = await chrome.storage.sync.get([
         "breakUntil",
         "previousSettings"
     ]);
+    console.log(result);
 
     if (
         !manual &&
@@ -549,7 +555,9 @@ async function stopFocusSession(manual = false) {
         return;
     }
 
+    console.log(settings, result.previousSettings);
     Object.assign(settings, result.previousSettings);
+    console.log(settings, result.previousSettings);
 
     breakUntil = null;
 
@@ -558,7 +566,8 @@ async function stopFocusSession(manual = false) {
         settings
     });
 
-    sendMessage("APPLY_ALL_FEATURES", settings);
+    sendMessage("APPLY_ALL_FEATURES", true);
+    console.log('hello2');
 
     startFocusBtnText.textContent = "Start Focus Session";
 
@@ -568,6 +577,7 @@ async function stopFocusSession(manual = false) {
     countdownElement.style.display = "none";
 
     setDurationOptionsDisabled(false);
+    console.log('hello3');
 }
 
 
@@ -807,66 +817,81 @@ chrome.storage.sync.get(
 
 chrome.runtime.onMessage.addListener((message) => {
     console.log('hello1');
-    if (message.type !== "CHANNEL_INFO") {
-        console.log('hello2');
+
+    // Focus session ended automatically
+    if (message.type === "FOCUS_SESSION_ENDED") {
+        breakUntil = null;
+
+        startFocusBtnText.textContent = "Start Focus Session";
+
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+
+        countdownElement.style.display = "none";
+
+        setDurationOptionsDisabled(false);
+
         return;
     }
 
-    const channelInfo = message.channelInfo;
+    if (message.type === "CHANNEL_INFO") {
+        const channelInfo = message.channelInfo;
 
-    console.log("CHANNEL_INFO received:", channelInfo);
-    console.log(
-        "Manual detection:",
-        isManualDetectionActive
-    );
+        console.log("CHANNEL_INFO received:", channelInfo);
+        console.log(
+            "Manual detection:",
+            isManualDetectionActive
+        );
 
-    // Manual detection result
-    if (isManualDetectionActive) {
-        currentManualChannelInfo = channelInfo;
+        // Manual detection result
+        if (isManualDetectionActive) {
+            currentManualChannelInfo = channelInfo;
 
-        manualInput.value = '';
-        manualSectionBottom.textContent = '';
-        manualSectionBottom.style.color = '#92929b';
+            manualInput.value = '';
+            manualSectionBottom.textContent = '';
+            manualSectionBottom.style.color = '#92929b';
 
-        manualFindButton.textContent = 'Find';
+            manualFindButton.textContent = 'Find';
 
-        manualChannelCard.style.display = 'flex';
+            manualChannelCard.style.display = 'flex';
 
-        manualChannelName.textContent =
+            manualChannelName.textContent =
+                channelInfo.channelName;
+
+            manualChannelDetectionStatus.textContent =
+                channelInfo.channelDetectionStatus;
+
+            manualChannelIconImage.src =
+                channelInfo.channelIcon;
+
+            updateAllowlistButton(
+                channelInfo,
+                manualAllowlistActionButton
+            );
+
+            isManualDetectionActive = false;
+
+            return;
+        }
+
+        // Automatic detection result
+        currentAutomaticChannelInfo = channelInfo;
+
+        channelName.textContent =
             channelInfo.channelName;
 
-        manualChannelDetectionStatus.textContent =
+        channelDetectionStatus.textContent =
             channelInfo.channelDetectionStatus;
 
-        manualChannelIconImage.src =
+        channelIconImage.src =
             channelInfo.channelIcon;
 
         updateAllowlistButton(
             channelInfo,
-            manualAllowlistActionButton
+            automaticAllowlistActionButton
         );
-
-        isManualDetectionActive = false;
-
-        return;
     }
-
-    // Automatic detection result
-    currentAutomaticChannelInfo = channelInfo;
-
-    channelName.textContent =
-        channelInfo.channelName;
-
-    channelDetectionStatus.textContent =
-        channelInfo.channelDetectionStatus;
-
-    channelIconImage.src =
-        channelInfo.channelIcon;
-
-    updateAllowlistButton(
-        channelInfo,
-        automaticAllowlistActionButton
-    );
+    
 });
 
 
