@@ -42,9 +42,15 @@ extensionToggle.addEventListener('change', handleExtensionToggle);
 
 //settings
 async function loadSettings() {
-    const result = await chrome.storage.sync.get(settings);
+    // const result = await chrome.storage.sync.get(settings);
 
-    Object.assign(settings, result);
+    // Object.assign(settings, result);
+    const { settings: savedSettings } =
+        await chrome.storage.sync.get("settings");
+
+    if (savedSettings) {
+        Object.assign(settings, savedSettings);
+    }
 
     extensionToggle.checked = settings.extensionEnabled;
 
@@ -618,6 +624,15 @@ async function restoreFocusSession() {
     breakUntil = result.breakUntil;
 
     if (!breakUntil) {
+        startFocusBtnText.textContent = "Start Focus Session";
+
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+
+        countdownElement.style.display = "none";
+
+        setDurationOptionsDisabled(false);
+
         return;
     }
 
@@ -815,22 +830,12 @@ chrome.storage.sync.get(
 // CHANNEL INFO MESSAGE
 // ============================================================
 
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener(async (message) => {
     console.log('hello1');
 
     // Focus session ended automatically
     if (message.type === "FOCUS_SESSION_ENDED") {
-        breakUntil = null;
-
-        startFocusBtnText.textContent = "Start Focus Session";
-
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-
-        countdownElement.style.display = "none";
-
-        setDurationOptionsDisabled(false);
-
+        await loadSettings();
         return;
     }
 
